@@ -8,7 +8,7 @@ const cards = [
 
 export default function MissionVisionSection() {
   return (
-    <section className="section muted-band">
+    <section className="section muted-band" id="mission">
       <div className="container mission-grid">
         {cards.map(([icon, title, text], index) => (
           <AnimatedSection key={title} delay={index * 0.1}>

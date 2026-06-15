@@ -11,14 +11,64 @@ export const restaurant = {
   cuisine: "Nepali · Chinese · Indian Cuisine & Premium Bar",
 };
 
-export const navLinks = [
+export type NavChild = { href: string; label: string; description?: string };
+export type NavLink = { href: string; label: string; children?: NavChild[] };
+
+export const navLinks: NavLink[] = [
   { href: "/", label: "Home" },
-  { href: "/menu", label: "Menu" },
-  { href: "/about", label: "About" },
-  { href: "/gallery", label: "Gallery" },
-  { href: "/events", label: "Events" },
+  {
+    href: "/menu",
+    label: "Menu",
+    children: [
+      { href: "/menu#nepali", label: "Nepali", description: "Dal bhat, momo & mountain classics" },
+      { href: "/menu#indian", label: "Indian", description: "Butter chicken, biryani & tandoor" },
+      { href: "/menu#chinese", label: "Chinese", description: "Wok-fired plates & noodles" },
+      { href: "/menu#bbq-grill", label: "BBQ & Grill", description: "Charcoal kebabs & mixed grill" },
+      { href: "/menu#drinks-bar", label: "Drinks & Bar", description: "Cocktails, lassi & imported beer" },
+      { href: "/menu#desserts", label: "Desserts", description: "Kheer, gulab jamun & lava cake" },
+    ],
+  },
+  {
+    href: "/about",
+    label: "About",
+    children: [
+      { href: "/about#story", label: "Our Story", description: "A Himalayan journey since 2018" },
+      { href: "/about#mission", label: "Mission & Vision", description: "What drives our kitchen" },
+      { href: "/about#team", label: "Meet the Team", description: "The people behind the experience" },
+    ],
+  },
+  {
+    href: "/gallery",
+    label: "Gallery",
+    children: [
+      { href: "/gallery#food", label: "Food", description: "Signature plates up close" },
+      { href: "/gallery#dining-area", label: "Dining Area", description: "Our moonlit dining room" },
+      { href: "/gallery#bar", label: "Bar", description: "The premium bar counter" },
+      { href: "/gallery#events", label: "Events", description: "Evenings to remember" },
+    ],
+  },
+  {
+    href: "/events",
+    label: "Events",
+    children: [
+      { href: "/events#upcoming", label: "Upcoming Events", description: "Live music & celebrations" },
+      { href: "/events#offers", label: "Special Offers", description: "Happy hour & family sets" },
+    ],
+  },
   { href: "/contact", label: "Contact" },
 ];
+
+export const menuCategories = [
+  "All",
+  "Nepali",
+  "Indian",
+  "Chinese",
+  "BBQ & Grill",
+  "Drinks & Bar",
+  "Desserts",
+];
+
+export const galleryFilters = ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"];
 
 export const adminLinks = [
   { href: "/admin", label: "Dashboard", icon: "LayoutDashboard" },
@@ -415,11 +465,62 @@ export const galleryImages: GalleryImage[] = [
   },
 ];
 
-export const testimonials = [
-  ["A rare place where the room feels elegant and the food still tastes deeply personal.", "Sara H."],
-  ["The momo and mixed grill are outstanding. Warm service, beautiful atmosphere, every time.", "Omar K."],
-  ["Our family celebration felt special from the first chai to the final dessert.", "Priya N."],
+export type Testimonial = {
+  quote: string;
+  name: string;
+  location: string;
+  rating: number;
+};
+
+export const testimonials: Testimonial[] = [
+  {
+    quote: "A rare place where the room feels elegant and the food still tastes deeply personal.",
+    name: "Sara H.",
+    location: "Sulaymaniyah",
+    rating: 5,
+  },
+  {
+    quote: "The momo and mixed grill are outstanding. Warm service, beautiful atmosphere, every single time.",
+    name: "Omar K.",
+    location: "Erbil",
+    rating: 5,
+  },
+  {
+    quote: "Our family celebration felt special from the first chai to the final dessert.",
+    name: "Priya N.",
+    location: "Sulaymaniyah",
+    rating: 5,
+  },
+  {
+    quote: "Easily the best Nepali food I've had outside Kathmandu. The dal bhat takes me straight home.",
+    name: "Bikash R.",
+    location: "Kathmandu",
+    rating: 5,
+  },
+  {
+    quote: "Cocktails at the bar are inventive and the staff treat you like a returning guest from day one.",
+    name: "Layla A.",
+    location: "Sulaymaniyah",
+    rating: 5,
+  },
+  {
+    quote: "We booked the live music night and it was unforgettable — gold-lit, generous, and full of warmth.",
+    name: "Haval M.",
+    location: "Duhok",
+    rating: 5,
+  },
+  {
+    quote: "Refined without being stiff. The butter chicken and fresh naan are worth the trip alone.",
+    name: "Dilan S.",
+    location: "Kirkuk",
+    rating: 4,
+  },
 ];
+
+export const ratingSummary = {
+  average: 4.9,
+  count: 240,
+};
 
 export const reservations: Reservation[] = [
   { id: "r1", name: "Sara Hadi", phone: "07700000001", date: "2026-05-29", time: "7:30 PM", guests: 4, occasion: "Birthday", status: "Confirmed" },

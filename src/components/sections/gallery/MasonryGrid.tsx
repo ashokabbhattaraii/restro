@@ -1,19 +1,33 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import GalleryFilter from "@/components/sections/gallery/GalleryFilter";
 import Lightbox from "@/components/shared/Lightbox";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import Badge from "@/components/ui/Badge";
-import { fetcher } from "@/lib/utils";
+import { galleryFilters } from "@/lib/constants";
+import { fetcher, slugify } from "@/lib/utils";
 import type { GalleryImage } from "@/types";
 
 export default function MasonryGrid() {
   const [filter, setFilter] = useState("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const { data = [] } = useSWR<GalleryImage[]>(`/api/gallery${filter === "All" ? "" : `?category=${encodeURIComponent(filter)}`}`, fetcher);
+
+  // Sync filter with URL hash so mega-menu links like /gallery#dining-area work.
+  useEffect(() => {
+    const applyHash = () => {
+      const hash = decodeURIComponent(window.location.hash.replace("#", ""));
+      if (!hash) return;
+      const match = galleryFilters.find((category) => slugify(category) === hash);
+      if (match) setFilter(match);
+    };
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, []);
 
   const images = useMemo(() => data, [data]);
   const move = (direction: number) => {

@@ -12,7 +12,7 @@ export default function TeamSection() {
   const { data = [] } = useSWR<StaffMember[]>("/api/staff?public=true", fetcher);
 
   return (
-    <section className="section">
+    <section className="section" id="team">
       <div className="container">
         <SectionHeader label="Meet Our Team" title="The People Behind the Experience" />
         <div className="team-grid">

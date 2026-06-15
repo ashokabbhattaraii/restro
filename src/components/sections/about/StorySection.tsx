@@ -15,7 +15,7 @@ export default function StorySection() {
   return (
     <>
       <PageHero eyebrow="About" title="Our Story" text="A Himalayan journey that began in 2018" />
-      <section className="section">
+      <section className="section" id="story">
         <div className="container split-grid about-story">
           <AnimatedSection direction="left">
             <FoodImage src={images.dining} alt="Restaurant interior" />

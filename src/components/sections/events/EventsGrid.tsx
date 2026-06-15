@@ -15,7 +15,7 @@ export default function EventsGrid() {
   const [featured, ...rest] = data;
 
   return (
-    <section className="section">
+    <section className="section" id="upcoming">
       <div className="container">
         <SectionHeader title="Upcoming Events" align="left" />
         {featured ? (

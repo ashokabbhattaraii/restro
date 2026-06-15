@@ -10,7 +10,7 @@ const offers = [
 
 export default function OffersSection() {
   return (
-    <section className="section offer-section motif">
+    <section className="section offer-section motif" id="offers">
       <div className="container">
         <SectionHeader label="Current Offers" title="Special Offers" />
         <div className="offer-grid">

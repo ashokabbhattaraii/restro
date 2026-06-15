@@ -1,6 +1,7 @@
 "use client";
 
-const filters = ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"];
+import { galleryFilters } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 
 export default function GalleryFilter({
   active,
@@ -9,14 +10,20 @@ export default function GalleryFilter({
   active: string;
   onChange: (filter: string) => void;
 }) {
+  const handleClick = (filter: string) => {
+    onChange(filter);
+    const url = filter === "All" ? window.location.pathname : `#${slugify(filter)}`;
+    window.history.replaceState(null, "", url);
+  };
+
   return (
     <div className="sticky-tabs">
       <div className="container tab-row">
-        {filters.map((filter) => (
+        {galleryFilters.map((filter) => (
           <button
             className={active === filter ? "active" : ""}
             key={filter}
-            onClick={() => onChange(filter)}
+            onClick={() => handleClick(filter)}
             type="button"
           >
             {filter}

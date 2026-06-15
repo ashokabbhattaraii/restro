@@ -1,6 +1,7 @@
 "use client";
 
-const categories = ["All", "Nepali", "Indian", "Chinese", "BBQ & Grill", "Drinks & Bar", "Desserts"];
+import { menuCategories } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
 
 export default function CategoryTabs({
   active,
@@ -9,14 +10,20 @@ export default function CategoryTabs({
   active: string;
   onChange: (category: string) => void;
 }) {
+  const handleClick = (category: string) => {
+    onChange(category);
+    const url = category === "All" ? window.location.pathname : `#${slugify(category)}`;
+    window.history.replaceState(null, "", url);
+  };
+
   return (
     <div className="sticky-tabs">
       <div className="container tab-row">
-        {categories.map((category) => (
+        {menuCategories.map((category) => (
           <button
             className={active === category ? "active" : ""}
             key={category}
-            onClick={() => onChange(category)}
+            onClick={() => handleClick(category)}
             type="button"
           >
             {category}

@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Libre_Baskerville, Manrope } from "next/font/google";
+import { Lato, Montserrat } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 
-const display = Libre_Baskerville({
+const display = Montserrat({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["500", "600", "700", "800", "900"],
 });
 
-const body = Manrope({
+const body = Lato({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  weight: ["300", "400", "700", "900"],
 });
 
 export const metadata: Metadata = {
