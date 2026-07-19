@@ -1,15 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Link from "next/link";
 import { Camera, MessageCircle, ThumbsUp } from "lucide-react";
 import { navLinks, restaurant } from "@/lib/constants";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Footer() {
+  initGSAP();
   const footerRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import CategoryTabs from "@/components/sections/menu/CategoryTabs";
 import Badge from "@/components/ui/Badge";
@@ -12,7 +11,6 @@ import { slugify } from "@/lib/utils";
 import { useMenuItems } from "@/hooks/useApi";
 import type { MenuItem } from "@/types";
 
-gsap.registerPlugin(ScrollTrigger);
 
 function MenuItemCard({ item }: { item: MenuItem }) {
   return (
@@ -44,6 +42,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
 }
 
 export default function MenuGrid() {
+  initGSAP();
   const [active, setActive] = useState("All");
   const { data: data = [] } = useMenuItems();
   const gridRef = useRef<HTMLDivElement>(null);

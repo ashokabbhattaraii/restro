@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Attaches a GSAP ScrollTrigger parallax effect to the returned ref.
  * The element will translate vertically by `distance` px over the scroll range.
  */
 export function useParallax(distance = 120) {
+  initGSAP();
   const ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {

@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { images } from "@/lib/constants";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const HIGHLIGHTS = [
   { icon: "🏔️", label: "Himalayan Heritage", text: "Rooted in Nepali tradition since 2018" },
@@ -18,6 +16,7 @@ const HIGHLIGHTS = [
 ];
 
 export default function IntroSection() {
+  initGSAP();
   const sectionRef = useRef<HTMLElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);

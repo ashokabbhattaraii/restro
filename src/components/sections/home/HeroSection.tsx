@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
 import SectionLabel from "@/components/ui/SectionLabel";
 import CounterUp from "@/components/shared/CounterUp";
 import { images, restaurant } from "@/lib/constants";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const lines = ["A Taste of", "the Himalayas"];
 
@@ -27,6 +25,7 @@ const SLIDE_IMAGES = [
 ];
 
 export default function HeroSection() {
+  initGSAP();
   const labelRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<(HTMLSpanElement | null)[]>([]);
   const subtitleRef = useRef<HTMLParagraphElement>(null);

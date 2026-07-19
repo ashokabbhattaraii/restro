@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { gsap } from "gsap";
+import { gsap, initGSAP } from "@/lib/gsap";
 
 export default function Modal({
   open,
@@ -14,6 +14,7 @@ export default function Modal({
   children: ReactNode;
   onClose: () => void;
 }) {
+  initGSAP();
   const backdropRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 

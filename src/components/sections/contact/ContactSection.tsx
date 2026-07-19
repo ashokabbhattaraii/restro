@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import PageHero from "@/components/shared/PageHero";
 import ContactDetails from "@/components/sections/contact/ContactDetails";
 import ContactForm from "@/components/sections/contact/ContactForm";
 import MapEmbed from "@/components/sections/contact/MapEmbed";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function ContactSection() {
+  initGSAP();
   const detailsRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);

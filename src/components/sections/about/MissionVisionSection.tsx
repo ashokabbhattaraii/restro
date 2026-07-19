@@ -1,11 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Card from "@/components/ui/Card";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const cards = [
   {
@@ -25,6 +23,7 @@ const cards = [
 ];
 
 export default function MissionVisionSection() {
+  initGSAP();
   const sectionRef = useRef<HTMLElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
 

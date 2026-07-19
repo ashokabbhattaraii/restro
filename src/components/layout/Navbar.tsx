@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
+import { gsap, initGSAP } from "@/lib/gsap";
 import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ import Button from "@/components/ui/Button";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function Navbar() {
+  initGSAP();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);

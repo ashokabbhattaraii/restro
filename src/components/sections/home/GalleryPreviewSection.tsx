@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import { events, images, menuItems } from "@/lib/constants";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const previewImages = [
   { src: images.dining, label: "Dining Area" },
@@ -19,6 +17,7 @@ const previewImages = [
 ];
 
 export default function GalleryPreviewSection() {
+  initGSAP();
   const headerRef = useRef<HTMLDivElement>(null);
   const mosaicRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);

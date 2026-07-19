@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
@@ -10,9 +9,9 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { useMenuItems } from "@/hooks/useApi";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function FeaturedDishesSection() {
+  initGSAP();
   const { data: items = [] } = useMenuItems(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);

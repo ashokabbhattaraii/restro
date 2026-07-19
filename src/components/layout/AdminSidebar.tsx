@@ -7,6 +7,8 @@ import {
   LogOut,
   Mail,
   PartyPopper,
+  Settings,
+  ShieldAlert,
   Users,
   UtensilsCrossed,
   X,
@@ -24,6 +26,8 @@ const links = [
   { href: "/admin/events", label: "Events", icon: PartyPopper },
   { href: "/admin/staff", label: "Staff", icon: Users },
   { href: "/admin/messages", label: "Messages", icon: Mail },
+  { href: "/admin/audit-log", label: "Audit Log", icon: ShieldAlert },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AdminSidebar({ open, onClose }: { open?: boolean; onClose?: () => void }) {

@@ -71,3 +71,22 @@ export type Message = {
   replied?: boolean;
   createdAt: string;
 };
+
+export type AuditAction =
+  | "create" | "update" | "delete"
+  | "import" | "bulk-update"
+  | "login" | "view";
+
+export type AuditResource =
+  | "menu" | "reservation" | "event" | "staff" | "gallery" | "message";
+
+export type AuditLogEntry = {
+  id: string;
+  action: AuditAction;
+  resource: AuditResource;
+  resourceId?: string;
+  summary: string;
+  details?: Record<string, unknown>;
+  timestamp: string;
+  admin: string;
+};

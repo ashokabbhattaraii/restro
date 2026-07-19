@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
+import { gsap, initGSAP } from "@/lib/gsap";
 import { Star } from "lucide-react";
 import SectionHeader from "@/components/shared/SectionHeader";
 import { ratingSummary, testimonials, type Testimonial } from "@/lib/constants";
@@ -39,6 +39,7 @@ function QuoteCard({ item }: { item: Testimonial }) {
 }
 
 export default function TestimonialsSection() {
+  initGSAP();
   const trackRef = useRef<HTMLDivElement>(null);
   const tweenRef = useRef<gsap.core.Tween | null>(null);
 

@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
 import SectionLabel from "@/components/ui/SectionLabel";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const CULTURAL_PILLARS = [
   { icon: "🏔️", label: "Mountain Spirit", text: "The resilience and warmth of Himalayan communities" },
@@ -15,6 +13,7 @@ const CULTURAL_PILLARS = [
 ];
 
 export default function CulturalSection() {
+  initGSAP();
   const sectionRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const artRef = useRef<HTMLDivElement>(null);

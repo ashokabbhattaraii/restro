@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Card from "@/components/ui/Card";
 import { useStaff } from "@/hooks/useApi";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function TeamSection() {
+  initGSAP();
   const { data: members = [] } = useStaff(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);

@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
@@ -10,7 +9,6 @@ import Badge from "@/components/ui/Badge";
 import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 
-gsap.registerPlugin(ScrollTrigger);
 
 function EventPosterCard({ event, index }: { event: EventItem; index: number }) {
   return (
@@ -87,6 +85,7 @@ function EventPosterCard({ event, index }: { event: EventItem; index: number }) 
 }
 
 export default function EventsPreviewSection() {
+  initGSAP();
   const { data: items = [] } = useEvents(3);
   const rowRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);

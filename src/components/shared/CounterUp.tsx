@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function CounterUp({ value, suffix = "" }: { value: number; suffix?: string }) {
+  initGSAP();
   const ref = useRef<HTMLSpanElement>(null);
   const [count, setCount] = useState(0);
 

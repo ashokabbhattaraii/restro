@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import PageHero from "@/components/shared/PageHero";
 import SectionLabel from "@/components/ui/SectionLabel";
 import { images } from "@/lib/constants";
 
-gsap.registerPlugin(ScrollTrigger);
 
 const milestones = [
   {
@@ -34,6 +32,7 @@ const milestones = [
 ];
 
 export default function StorySection() {
+  initGSAP();
   const sectionRef = useRef<HTMLElement>(null);
   const imgRef = useRef<HTMLDivElement>(null);
   const labelRef = useRef<HTMLDivElement>(null);

@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth";
 import { menuItems } from "@/lib/constants";
 import { sanitizeText } from "@/lib/utils";
 import { menuItemSchema } from "@/lib/validations";
+import { addAuditLog } from "@/lib/audit-log";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -19,7 +20,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAdmin())) {
+  const admin = await requireAdmin();
+  if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -33,6 +35,13 @@ export async function POST(request: Request) {
     ...parsed.data,
     id: sanitizeText(parsed.data.name).toLowerCase().replaceAll(" ", "-"),
   };
+
+  addAuditLog({
+    action: "create",
+    resource: "menu",
+    summary: `Created menu item "${parsed.data.name}"`,
+    admin: admin.user.name,
+  });
 
   return NextResponse.json(item, { status: 201 });
 }

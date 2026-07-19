@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
-import { gsap } from "gsap";
+import { gsap, initGSAP } from "@/lib/gsap";
 import { usePathname } from "next/navigation";
 
 export default function PageTransition({ children }: { children: ReactNode }) {
+  initGSAP();
   const ref = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 

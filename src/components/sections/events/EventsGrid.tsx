@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
@@ -11,9 +10,9 @@ import Card from "@/components/ui/Card";
 import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function EventsGrid() {
+  initGSAP();
   const { data: events = [] } = useEvents();
   const sectionRef = useRef<HTMLElement>(null);
   const featuredRef = useRef<HTMLDivElement>(null);

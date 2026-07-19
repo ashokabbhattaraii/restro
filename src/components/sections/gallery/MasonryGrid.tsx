@@ -2,8 +2,7 @@
 
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
 import GalleryFilter from "@/components/sections/gallery/GalleryFilter";
 import Lightbox from "@/components/shared/Lightbox";
 import Image from "next/image";
@@ -12,9 +11,9 @@ import { galleryFilters } from "@/lib/constants";
 import { slugify } from "@/lib/utils";
 import { useGalleryImages } from "@/hooks/useApi";
 
-gsap.registerPlugin(ScrollTrigger);
 
 export default function MasonryGrid() {
+  initGSAP();
   const [filter, setFilter] = useState("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const { data: data = [] } = useGalleryImages(filter === "All" ? undefined : filter);
