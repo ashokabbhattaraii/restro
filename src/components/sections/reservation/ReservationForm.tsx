@@ -15,6 +15,8 @@ import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { restaurant } from "@/lib/constants";
 import { reservationSchema } from "@/lib/validations";
+import { useCreateReservation } from "@/hooks/useApi";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -38,53 +40,59 @@ export default function ReservationForm() {
   const formCardRef = useRef<HTMLDivElement>(null);
   const hoursCardRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const createReservation = useCreateReservation();
 
   const form = useForm<ReservationFormInput, unknown, ReservationFormOutput>({
     resolver: zodResolver(reservationSchema),
     defaultValues: { guests: 2, occasion },
   });
 
+  const { clearDraft } = useFormDraft(form, "reservation");
+
+  useEffect(() => {
+    const sub = form.watch((values) => {
+      localStorage.setItem("form-draft:reservation", JSON.stringify(values));
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
   useEffect(() => {
     const ctx = gsap.context(() => {
-      /* Form card slide in from left */
       gsap.fromTo(
         formCardRef.current,
         { opacity: 0, x: -60, scale: 0.96 },
         {
-          opacity: 1, x: 0, scale: 1, duration: 0.95, ease: "power3.out",
+          opacity: 1, x: 0, scale: 1, duration: 0.62, ease: "power3.out",
           scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
         }
       );
 
-      /* Hours card slide in from right */
       gsap.fromTo(
         hoursCardRef.current,
         { opacity: 0, x: 60, scale: 0.96 },
         {
-          opacity: 1, x: 0, scale: 1, duration: 0.95, ease: "power3.out", delay: 0.12,
+          opacity: 1, x: 0, scale: 1, duration: 0.62, ease: "power3.out", delay: 0.12,
           scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
         }
       );
 
-      /* Form field labels stagger */
       const labels = formCardRef.current?.querySelectorAll("label, .occasion-field, .info-strip") ?? [];
       gsap.fromTo(
         labels,
         { opacity: 0, y: 16 },
         {
-          opacity: 1, y: 0, duration: 0.5, stagger: 0.06,
+          opacity: 1, y: 0, duration: 0.33, stagger: 0.05,
           scrollTrigger: { trigger: formCardRef.current, start: "top 75%", once: true },
           delay: 0.3,
         }
       );
 
-      /* Hours rows stagger */
       const rows = hoursCardRef.current?.querySelectorAll("li") ?? [];
       gsap.fromTo(
         rows,
         { opacity: 0, x: 20 },
         {
-          opacity: 1, x: 0, duration: 0.45, stagger: 0.06,
+          opacity: 1, x: 0, duration: 0.29, stagger: 0.05,
           scrollTrigger: { trigger: hoursCardRef.current, start: "top 80%", once: true },
           delay: 0.4,
         }
@@ -95,19 +103,14 @@ export default function ReservationForm() {
   }, []);
 
   const submit = form.handleSubmit(async (values) => {
-    const response = await fetch("/api/reservations", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...values, occasion }),
-    });
-
-    if (!response.ok) {
+    try {
+      await createReservation.mutateAsync({ ...values, occasion });
+      toast.success("Reservation request received! We'll confirm shortly.");
+      form.reset();
+      clearDraft();
+    } catch {
       toast.error("Reservation could not be sent.");
-      return;
     }
-
-    toast.success("Reservation request received! We'll confirm shortly.");
-    form.reset();
   });
 
   return (
@@ -115,11 +118,9 @@ export default function ReservationForm() {
       <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" />
       <section className="section" ref={sectionRef}>
         <div className="container reservation-layout">
-          {/* Form */}
           <div ref={formCardRef} style={{ opacity: 0 }}>
             <Card className="reservation-form">
               <form onSubmit={submit}>
-                {/* Form header */}
                 <div style={{ marginBottom: "28px" }}>
                   <div style={{
                     width: "40px", height: "3px",
@@ -165,7 +166,6 @@ export default function ReservationForm() {
                   </label>
                 </div>
 
-                {/* Occasion */}
                 <div className="occasion-field">
                   <span>Occasion (Optional)</span>
                   <div className="occasion-row">
@@ -191,8 +191,8 @@ export default function ReservationForm() {
                   />
                 </label>
 
-                <Button className="submit-btn" type="submit">
-                  Confirm Reservation
+                <Button className="submit-btn" type="submit" disabled={createReservation.isPending}>
+                  {createReservation.isPending ? "Submitting..." : "Confirm Reservation"}
                 </Button>
 
                 <p className="info-strip" style={{ marginTop: "16px" }}>
@@ -202,10 +202,8 @@ export default function ReservationForm() {
             </Card>
           </div>
 
-          {/* Hours sidebar */}
           <div ref={hoursCardRef} style={{ opacity: 0 }}>
             <Card className="hours-card" style={{ position: "sticky", top: "calc(var(--nav-height) + 24px)" }}>
-              {/* Card header */}
               <div style={{ marginBottom: "24px" }}>
                 <div style={{
                   width: "40px", height: "3px",
@@ -224,7 +222,6 @@ export default function ReservationForm() {
                 ))}
               </ul>
 
-              {/* Divider */}
               <div style={{
                 height: "1px",
                 background: "rgba(242,202,80,0.15)",
@@ -235,7 +232,6 @@ export default function ReservationForm() {
                 We recommend reservations for weekends and cultural event nights to guarantee your preferred table.
               </p>
 
-              {/* Contact quick links */}
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {[
                   { label: "📞 Call", value: restaurant.phoneOne, href: `tel:${restaurant.phoneOne}` },

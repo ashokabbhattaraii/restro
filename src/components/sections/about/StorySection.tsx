@@ -49,10 +49,10 @@ export default function StorySection() {
       });
 
       /* Image */
-      tl.fromTo(imgRef.current, { opacity: 0, x: -60, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 1.0 })
-        .fromTo(labelRef.current, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.65 }, "-=0.7")
-        .fromTo(headingRef.current, { opacity: 0, y: 36, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.85 }, "-=0.5")
-        .fromTo(bodyRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, "-=0.55");
+      tl.fromTo(imgRef.current, { opacity: 0, x: -60, scale: 0.94 }, { opacity: 1, x: 0, scale: 1, duration: 0.65 })
+        .fromTo(labelRef.current, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.42 }, "-=0.7")
+        .fromTo(headingRef.current, { opacity: 0, y: 36, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55 }, "-=0.5")
+        .fromTo(bodyRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45 }, "-=0.55");
 
       /* Timeline items stagger */
       const items = timelineRef.current?.querySelectorAll(".timeline-item") ?? [];
@@ -63,7 +63,7 @@ export default function StorySection() {
         start: "top 82%",
         once: true,
         onEnter: () => {
-          gsap.to(items, { opacity: 1, x: 0, duration: 0.65, stagger: 0.14, ease: "power3.out" });
+          gsap.to(items, { opacity: 1, x: 0, duration: 0.42, stagger: 0.11, ease: "power3.out" });
         },
       });
 
@@ -75,7 +75,7 @@ export default function StorySection() {
         start: "top 80%",
         once: true,
         onEnter: () => {
-          gsap.to(lines, { scaleY: 1, duration: 0.7, stagger: 0.12, ease: "power2.out", delay: 0.2 });
+          gsap.to(lines, { scaleY: 1, duration: 0.45, stagger: 0.09, ease: "power2.out", delay: 0.2 });
         },
       });
     });

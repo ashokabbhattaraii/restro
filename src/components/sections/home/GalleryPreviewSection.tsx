@@ -30,7 +30,7 @@ export default function GalleryPreviewSection() {
         headerRef.current,
         { opacity: 0, y: 32 },
         {
-          opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          opacity: 1, y: 0, duration: 0.52, ease: "power3.out",
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
@@ -51,7 +51,7 @@ export default function GalleryPreviewSection() {
             opacity: 1,
             scale: 1,
             filter: "blur(0px)",
-            duration: 0.75,
+            duration: 0.49,
             stagger: { each: 0.1, from: "start" },
             ease: "power3.out",
           });
@@ -63,7 +63,7 @@ export default function GalleryPreviewSection() {
         ctaRef.current,
         { opacity: 0, y: 24 },
         {
-          opacity: 1, y: 0, duration: 0.7, ease: "power2.out",
+          opacity: 1, y: 0, duration: 0.45, ease: "power2.out",
           scrollTrigger: { trigger: ctaRef.current, start: "top 90%", once: true },
         }
       );
@@ -77,11 +77,11 @@ export default function GalleryPreviewSection() {
           const rect = tile.getBoundingClientRect();
           const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12;
           const y = ((e.clientY - rect.top) / rect.height - 0.5) * 12;
-          gsap.to(img, { x, y, duration: 0.4, ease: "power2.out" });
+          gsap.to(img, { x, y, duration: 0.26, ease: "power2.out" });
         });
 
         tile.addEventListener("mouseleave", () => {
-          gsap.to(img, { x: 0, y: 0, duration: 0.6, ease: "power2.out" });
+          gsap.to(img, { x: 0, y: 0, duration: 0.39, ease: "power2.out" });
         });
       });
     });

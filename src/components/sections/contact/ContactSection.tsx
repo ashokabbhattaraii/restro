@@ -21,7 +21,7 @@ export default function ContactSection() {
         detailsRef.current,
         { opacity: 0, x: -60, scale: 0.96 },
         {
-          opacity: 1, x: 0, scale: 1, duration: 0.9, ease: "power3.out",
+          opacity: 1, x: 0, scale: 1, duration: 0.59, ease: "power3.out",
           scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
         }
       );
@@ -30,7 +30,7 @@ export default function ContactSection() {
         formRef.current,
         { opacity: 0, x: 60, scale: 0.96 },
         {
-          opacity: 1, x: 0, scale: 1, duration: 0.9, ease: "power3.out", delay: 0.14,
+          opacity: 1, x: 0, scale: 1, duration: 0.59, ease: "power3.out", delay: 0.14,
           scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
         }
       );
@@ -43,7 +43,7 @@ export default function ContactSection() {
         start: "top 75%",
         once: true,
         onEnter: () => {
-          gsap.to(rows, { opacity: 1, x: 0, duration: 0.5, stagger: 0.08, ease: "power2.out", delay: 0.3 });
+          gsap.to(rows, { opacity: 1, x: 0, duration: 0.33, stagger: 0.06, ease: "power2.out", delay: 0.3 });
         },
       });
     });

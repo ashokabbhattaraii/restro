@@ -47,7 +47,7 @@ export default function AnimatedSection({
           opacity: 1,
           x: 0,
           y: 0,
-          duration: 0.7,
+          duration: 0.45,
           delay,
           ease: "power2.out",
         });

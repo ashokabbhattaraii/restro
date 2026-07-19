@@ -40,17 +40,17 @@ export default function IntroSection() {
         defaults: { ease: "power3.out" },
       });
 
-      tl.fromTo(sideLineRef.current, { scaleY: 0, transformOrigin: "top" }, { scaleY: 1, duration: 0.7 })
-        .fromTo(labelRef.current, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.65 }, "-=0.4")
-        .fromTo(headingRef.current, { opacity: 0, y: 40, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8 }, "-=0.4")
-        .fromTo(bodyRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.65 }, "-=0.5")
+      tl.fromTo(sideLineRef.current, { scaleY: 0, transformOrigin: "top" }, { scaleY: 1, duration: 0.45 })
+        .fromTo(labelRef.current, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.42 }, "-=0.4")
+        .fromTo(headingRef.current, { opacity: 0, y: 40, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.52 }, "-=0.4")
+        .fromTo(bodyRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.42 }, "-=0.5")
         .fromTo(
           highlightsRef.current?.querySelectorAll(".intro-highlight") ?? [],
           { opacity: 0, x: -24, scale: 0.95 },
-          { opacity: 1, x: 0, scale: 1, duration: 0.55, stagger: 0.1 },
+          { opacity: 1, x: 0, scale: 1, duration: 0.36, stagger: 0.08 },
           "-=0.4"
         )
-        .fromTo(ctaRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55 }, "-=0.3");
+        .fromTo(ctaRef.current, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.36 }, "-=0.3");
 
       /* ── Right column: images slide in with stagger ── */
       const imgTl = gsap.timeline({
@@ -63,8 +63,8 @@ export default function IntroSection() {
       });
 
       imgTl
-        .fromTo(img1Ref.current, { opacity: 0, x: 60, scale: 0.92 }, { opacity: 1, x: 0, scale: 1, duration: 0.9 })
-        .fromTo(img2Ref.current, { opacity: 0, x: 80, scale: 0.90, y: 20 }, { opacity: 1, x: 36, scale: 1, y: 0, duration: 0.9 }, "-=0.6");
+        .fromTo(img1Ref.current, { opacity: 0, x: 60, scale: 0.92 }, { opacity: 1, x: 0, scale: 1, duration: 0.59 })
+        .fromTo(img2Ref.current, { opacity: 0, x: 80, scale: 0.90, y: 20 }, { opacity: 1, x: 36, scale: 1, y: 0, duration: 0.59 }, "-=0.6");
     });
 
     return () => ctx.revert();

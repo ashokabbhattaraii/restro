@@ -4,24 +4,20 @@ import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import GalleryFilter from "@/components/sections/gallery/GalleryFilter";
 import Lightbox from "@/components/shared/Lightbox";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
-import { galleryFilters, galleryImages as staticImages } from "@/lib/constants";
-import { fetcher, slugify } from "@/lib/utils";
-import type { GalleryImage } from "@/types";
+import { galleryFilters } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
+import { useGalleryImages } from "@/hooks/useApi";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function MasonryGrid() {
   const [filter, setFilter] = useState("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const { data = staticImages } = useSWR<GalleryImage[]>(
-    `/api/gallery${filter === "All" ? "" : `?category=${encodeURIComponent(filter)}`}`,
-    fetcher
-  );
+  const { data: data = [] } = useGalleryImages(filter === "All" ? undefined : filter);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevFilter = useRef(filter);
 
@@ -39,7 +35,6 @@ export default function MasonryGrid() {
 
   const images = useMemo(() => data, [data]);
 
-  /* ── Animate tiles on filter change or initial load ── */
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return;
@@ -55,7 +50,7 @@ export default function MasonryGrid() {
         { opacity: 0, scale: 0.88, y: 30 },
         {
           opacity: 1, scale: 1, y: 0,
-          duration: 0.6, stagger: { each: 0.06, from: "random" }, ease: "power3.out",
+          duration: 0.39, stagger: { each: 0.06, from: "random" }, ease: "power3.out",
         }
       );
     } else {
@@ -67,7 +62,7 @@ export default function MasonryGrid() {
         onEnter: () => {
           gsap.to(tiles, {
             opacity: 1, scale: 1, y: 0,
-            duration: 0.65, stagger: { each: 0.07, from: "start" }, ease: "power3.out",
+            duration: 0.42, stagger: { each: 0.07, from: "start" }, ease: "power3.out",
           });
         },
       });
@@ -89,7 +84,7 @@ export default function MasonryGrid() {
           {images.map((item, index) => (
             <button
               className={`gallery-tile ${item.shape ?? ""}`}
-              key={item.id}
+              key={item._id || item.id}
               onClick={() => setActiveIndex(index)}
               type="button"
               aria-label={`View ${item.title}`}

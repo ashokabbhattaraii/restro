@@ -1,9 +1,10 @@
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import ContactSection from "@/components/sections/contact/ContactSection";
 
 export default function ContactPage() {
   return (
     <main>
-      <ContactSection />
+      <ErrorBoundary><ContactSection /></ErrorBoundary>
     </main>
   );
 }

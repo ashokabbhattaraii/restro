@@ -27,7 +27,7 @@ export default function CulturalSection() {
         textRef.current,
         { opacity: 0, x: -50 },
         {
-          opacity: 1, x: 0, duration: 0.95, ease: "power3.out",
+          opacity: 1, x: 0, duration: 0.62, ease: "power3.out",
           scrollTrigger: { trigger: sectionRef.current, start: "top 78%", once: true },
         }
       );
@@ -40,7 +40,7 @@ export default function CulturalSection() {
         start: "top 82%",
         once: true,
         onEnter: () => {
-          gsap.to(pillars, { opacity: 1, x: 0, duration: 0.55, stagger: 0.1, ease: "power2.out" });
+          gsap.to(pillars, { opacity: 1, x: 0, duration: 0.36, stagger: 0.08, ease: "power2.out" });
         },
       });
 
@@ -49,7 +49,7 @@ export default function CulturalSection() {
         artRef.current,
         { opacity: 0, x: 60, scale: 0.9 },
         {
-          opacity: 1, x: 0, scale: 1, duration: 1.05, ease: "power3.out",
+          opacity: 1, x: 0, scale: 1, duration: 0.68, ease: "power3.out",
           scrollTrigger: { trigger: sectionRef.current, start: "top 75%", once: true },
         }
       );

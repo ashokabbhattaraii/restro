@@ -10,6 +10,8 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
 import { messageSchema } from "@/lib/validations";
+import { useCreateMessage } from "@/hooks/useApi";
+import { useFormDraft } from "@/hooks/useFormDraft";
 
 type ContactData = z.infer<typeof messageSchema>;
 
@@ -17,21 +19,18 @@ export default function ContactForm() {
   const form = useForm<ContactData>({
     resolver: zodResolver(messageSchema),
   });
+  const createMessage = useCreateMessage();
+  const { clearDraft } = useFormDraft(form, "contact");
 
   const submit = form.handleSubmit(async (values) => {
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(values),
-    });
-
-    if (!response.ok) {
+    try {
+      await createMessage.mutateAsync(values);
+      toast.success("Message sent.");
+      form.reset();
+      clearDraft();
+    } catch {
       toast.error("Message could not be sent.");
-      return;
     }
-
-    toast.success("Message sent.");
-    form.reset();
   });
 
   return (
@@ -51,7 +50,9 @@ export default function ContactForm() {
           </Select>
         </label>
         <label><span>Message</span><Textarea {...form.register("message")} rows={4} /></label>
-        <Button className="submit-btn" type="submit">Send Message</Button>
+        <Button className="submit-btn" type="submit" disabled={createMessage.isPending}>
+          {createMessage.isPending ? "Sending..." : "Send Message"}
+        </Button>
       </form>
     </Card>
   );

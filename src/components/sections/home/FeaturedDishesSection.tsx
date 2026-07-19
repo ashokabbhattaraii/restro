@@ -3,39 +3,32 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import { fetcher } from "@/lib/utils";
-import { menuItems } from "@/lib/constants";
-import type { MenuItem } from "@/types";
+import { useMenuItems } from "@/hooks/useApi";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const STATIC_FEATURED = menuItems.filter((m) => m.featured).slice(0, 6);
-
 export default function FeaturedDishesSection() {
-  const { data = STATIC_FEATURED } = useSWR<MenuItem[]>("/api/menu?featured=true", fetcher);
+  const { data: items = [] } = useMenuItems(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      /* ── Header reveal ── */
       gsap.fromTo(
         headerRef.current,
         { opacity: 0, y: 36, filter: "blur(6px)" },
         {
-          opacity: 1, y: 0, filter: "blur(0px)", duration: 0.85,
+          opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55,
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
 
-      /* ── Cards: stagger float-up with scale and subtle rotation ── */
       const grid = gridRef.current;
       if (!grid) return;
 
@@ -52,14 +45,13 @@ export default function FeaturedDishesSection() {
             y: 0,
             scale: 1,
             rotateY: 0,
-            duration: 0.75,
-            stagger: 0.12,
+            duration: 0.49,
+            stagger: 0.09,
             ease: "power3.out",
           });
         },
       });
 
-      /* ── Hover tilt effect on each card ── */
       cards.forEach((card) => {
         const inner = card.querySelector(".dish-card");
         if (!inner) return;
@@ -71,7 +63,7 @@ export default function FeaturedDishesSection() {
           gsap.to(inner, {
             rotateX: -y * 6,
             rotateY: x * 6,
-            duration: 0.4,
+            duration: 0.26,
             ease: "power2.out",
             transformPerspective: 800,
           });
@@ -81,7 +73,7 @@ export default function FeaturedDishesSection() {
           gsap.to(inner, {
             rotateX: 0,
             rotateY: 0,
-            duration: 0.6,
+            duration: 0.39,
             ease: "elastic.out(1, 0.75)",
           });
         });
@@ -89,9 +81,7 @@ export default function FeaturedDishesSection() {
     });
 
     return () => ctx.revert();
-  }, [data]);
-
-  const items = data.length > 0 ? data : STATIC_FEATURED;
+  }, [items]);
 
   return (
     <section className="section" ref={sectionRef}>
@@ -106,12 +96,12 @@ export default function FeaturedDishesSection() {
 
         <div className="dish-grid snap-row" ref={gridRef}>
           {items.map((dish) => (
-            <div key={dish.id} className="dish-card-wrapper" style={{ perspective: "800px" }}>
+            <div key={dish._id || dish.id} className="dish-card-wrapper" style={{ perspective: "800px" }}>
               <Card className="dish-card">
                 <FoodImage src={dish.image} alt={dish.name} />
                 <div className="dish-body">
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
-                    <h3 style={{ margin: 0, flex: 1 }}>{dish.name}</h3>
+                    <h3 style={{ margin: 0, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{dish.name}</h3>
                     <span style={{
                       fontFamily: "var(--font-display), Georgia, serif",
                       fontSize: "18px",
@@ -137,7 +127,6 @@ export default function FeaturedDishesSection() {
           ))}
         </div>
 
-        {/* Bottom CTA */}
         <div className="center-actions" style={{ marginTop: "48px" }}>
           <Button href="/menu">View Full Menu</Button>
           <Button href="/reservation" variant="ghost">Reserve a Table</Button>

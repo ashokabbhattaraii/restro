@@ -3,13 +3,11 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
-import { fetcher } from "@/lib/utils";
-import { events as staticEvents } from "@/lib/constants";
+import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -37,7 +35,6 @@ function EventPosterCard({ event, index }: { event: EventItem; index: number }) 
           sizes="(max-width: 768px) 100vw, 33vw"
         />
       )}
-      {/* Gradient overlay */}
       <div style={{
         position: "absolute",
         inset: 0,
@@ -46,7 +43,6 @@ function EventPosterCard({ event, index }: { event: EventItem; index: number }) 
         transition: "background 300ms ease",
       }} />
 
-      {/* Content */}
       <div style={{ position: "relative", zIndex: 2, padding: "24px 28px 28px" }}>
         <Badge style={{ marginBottom: "10px" }}>{event.date}</Badge>
         {event.type && (
@@ -91,7 +87,7 @@ function EventPosterCard({ event, index }: { event: EventItem; index: number }) 
 }
 
 export default function EventsPreviewSection() {
-  const { data = staticEvents } = useSWR<EventItem[]>("/api/events?limit=3", fetcher);
+  const { data: items = [] } = useEvents(3);
   const rowRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -101,7 +97,7 @@ export default function EventsPreviewSection() {
         headerRef.current,
         { opacity: 0, y: 32 },
         {
-          opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          opacity: 1, y: 0, duration: 0.52, ease: "power3.out",
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
@@ -118,12 +114,11 @@ export default function EventsPreviewSection() {
         onEnter: () => {
           gsap.to(cards, {
             opacity: 1, y: 0, scale: 1,
-            duration: 0.8, stagger: 0.14, ease: "power3.out",
+            duration: 0.52, stagger: 0.11, ease: "power3.out",
           });
         },
       });
 
-      /* ── Subtle parallax image depth on scroll ── */
       cards.forEach((card) => {
         const img = card.querySelector("img");
         if (!img) return;
@@ -140,9 +135,7 @@ export default function EventsPreviewSection() {
     });
 
     return () => ctx.revert();
-  }, [data]);
-
-  const items = data.length > 0 ? data : staticEvents;
+  }, [items]);
 
   return (
     <section className="section" style={{ overflow: "hidden" }}>
@@ -158,10 +151,9 @@ export default function EventsPreviewSection() {
         <div
           className="event-row"
           ref={rowRef}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: "24px" }}
         >
           {items.slice(0, 3).map((event, i) => (
-            <EventPosterCard key={event.id} event={event} index={i} />
+            <EventPosterCard key={event._id || event.id} event={event} index={i} />
           ))}
         </div>
 

@@ -25,6 +25,7 @@ export default function OptimizedImage({
       quality={quality}
       priority={priority}
       className={className}
+      style={{ objectFit: "cover" }}
       placeholder="blur"
       blurDataURL={`data:image/svg+xml;base64,${toBase64(shimmer(1000, 750))}`}
     />

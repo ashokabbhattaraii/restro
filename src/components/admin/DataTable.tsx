@@ -1,56 +1,98 @@
 "use client";
 
-export type DataTableRow = Record<string, string | number | boolean | undefined>;
+import { Eye, Pencil, Trash2 } from "lucide-react";
+
+interface Column<T> {
+  key: keyof T;
+  label: string;
+  render?: (value: T[keyof T], row: T) => React.ReactNode;
+}
+
+const statusStyles: Record<string, string> = {
+  confirmed: "badge-success",
+  pending: "badge-warning",
+  cancelled: "badge-danger",
+  contacted: "badge-info",
+};
 
 function StatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase();
-  const map: Record<string, string> = {
-    confirmed: "badge-success",
-    pending: "badge-warning",
-    cancelled: "badge-danger",
-  };
-  return <span className={`admin-badge ${map[s] || ""}`}>{status}</span>;
+  return <span className={`admin-badge ${statusStyles[s] || ""}`}>{status}</span>;
 }
 
-export default function DataTable({
+function defaultRender<T>(value: T[keyof T], _row: T): React.ReactNode {
+  if (value === null || value === undefined) return "—";
+  return String(value);
+}
+
+export default function DataTable<T extends { _id?: string; id?: string }>({
   columns,
-  rows,
-  actions = false,
+  data,
   onView,
   onEdit,
+  onDelete,
 }: {
-  columns: string[];
-  rows: DataTableRow[];
-  actions?: boolean;
-  onView?: (row: DataTableRow) => void;
-  onEdit?: (row: DataTableRow) => void;
+  columns: Column<T>[];
+  data: T[];
+  onView?: (row: T) => void;
+  onEdit?: (row: T) => void;
+  onDelete?: (row: T) => void;
 }) {
+  const hasActions = !!(onView || onEdit || onDelete);
+
+  if (data.length === 0) {
+    return (
+      <div className="data-table-empty">
+        <p>No entries found.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="data-table-wrap">
       <table className="data-table">
         <thead>
           <tr>
             {columns.map((col) => (
-              <th key={col}>{col}</th>
+              <th key={String(col.key)}>{col.label}</th>
             ))}
-            {actions && <th>Actions</th>}
+            {hasActions && <th className="table-actions-th">Actions</th>}
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={String(row.id ?? i)}>
+          {data.map((row) => (
+            <tr key={row._id || row.id || String((row as Record<string, unknown>)[String(columns[0]?.key)])}>
               {columns.map((col) => {
-                const val = row[col];
-                if (col === "status" || col === "category") {
-                  return <td key={col}><StatusBadge status={String(val)} /></td>;
-                }
-                return <td key={col}>{String(val ?? "")}</td>;
+                const value = row[col.key];
+                return (
+                  <td key={String(col.key)}>
+                    {col.key === "status" || col.key === "category" ? (
+                      <StatusBadge status={String(value ?? "")} />
+                    ) : col.render ? (
+                      col.render(value, row)
+                    ) : (
+                      defaultRender(value, row)
+                    )}
+                  </td>
+                );
               })}
-              {actions && (
+              {hasActions && (
                 <td className="table-actions">
-                  {onView && <button type="button" className="admin-btn-sm" onClick={() => onView(row)}>View</button>}
-                  {onEdit && <button type="button" className="admin-btn-sm" onClick={() => onEdit(row)}>Edit</button>}
-                  {!onView && !onEdit && <button type="button" className="admin-btn-sm">View</button>}
+                  {onView && (
+                    <button type="button" className="admin-btn-sm" onClick={() => onView(row)} aria-label="View">
+                      <Eye size={13} /> View
+                    </button>
+                  )}
+                  {onEdit && (
+                    <button type="button" className="admin-btn-sm" onClick={() => onEdit(row)} aria-label="Edit">
+                      <Pencil size={13} /> Edit
+                    </button>
+                  )}
+                  {onDelete && (
+                    <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={() => onDelete(row)} aria-label="Delete">
+                      <Trash2 size={13} /> Delete
+                    </button>
+                  )}
                 </td>
               )}
             </tr>

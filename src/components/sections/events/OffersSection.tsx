@@ -47,7 +47,7 @@ export default function OffersSection() {
         headerRef.current,
         { opacity: 0, y: 36 },
         {
-          opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          opacity: 1, y: 0, duration: 0.52, ease: "power3.out",
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
@@ -59,7 +59,7 @@ export default function OffersSection() {
         start: "top 80%",
         once: true,
         onEnter: () => {
-          gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.75, stagger: 0.13, ease: "power3.out" });
+          gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.49, stagger: 0.1, ease: "power3.out" });
         },
       });
 
@@ -69,7 +69,7 @@ export default function OffersSection() {
         pcts,
         { opacity: 0, scale: 0.6 },
         {
-          opacity: 1, scale: 1, duration: 0.7, stagger: 0.15, ease: "back.out(1.4)",
+          opacity: 1, scale: 1, duration: 0.45, stagger: 0.11, ease: "back.out(1.4)",
           scrollTrigger: { trigger: gridRef.current, start: "top 78%", once: true },
         }
       );

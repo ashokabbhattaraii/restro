@@ -1,3 +1,4 @@
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import EventsPreviewSection from "@/components/sections/home/EventsPreviewSection";
 import FeaturedDishesSection from "@/components/sections/home/FeaturedDishesSection";
 import GalleryPreviewSection from "@/components/sections/home/GalleryPreviewSection";
@@ -10,14 +11,14 @@ import Divider from "@/components/ui/Divider";
 export default function HomePage() {
   return (
     <main>
-      <HeroSection />
-      <IntroSection />
+      <ErrorBoundary><HeroSection /></ErrorBoundary>
+      <ErrorBoundary><IntroSection /></ErrorBoundary>
       <Divider />
-      <FeaturedDishesSection />
-      <ReservationCTASection />
-      <EventsPreviewSection />
-      <TestimonialsSection />
-      <GalleryPreviewSection />
+      <ErrorBoundary><FeaturedDishesSection /></ErrorBoundary>
+      <ErrorBoundary><ReservationCTASection /></ErrorBoundary>
+      <ErrorBoundary><EventsPreviewSection /></ErrorBoundary>
+      <ErrorBoundary><TestimonialsSection /></ErrorBoundary>
+      <ErrorBoundary><GalleryPreviewSection /></ErrorBoundary>
     </main>
   );
 }

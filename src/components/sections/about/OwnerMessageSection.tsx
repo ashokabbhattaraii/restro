@@ -23,11 +23,11 @@ export default function OwnerMessageSection() {
         defaults: { ease: "power3.out" },
       });
 
-      tl.fromTo(photoRef.current, { opacity: 0, scale: 0.82, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.0 })
-        .fromTo(nameRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.65 }, "-=0.5")
-        .fromTo(titleRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5 }, "-=0.4")
-        .fromTo(barRef.current, { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, duration: 0.7 }, "-=0.4")
-        .fromTo(quoteRef.current, { opacity: 0, y: 32, filter: "blur(4px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9 }, "-=0.5");
+      tl.fromTo(photoRef.current, { opacity: 0, scale: 0.82, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.65 })
+        .fromTo(nameRef.current, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.42 }, "-=0.5")
+        .fromTo(titleRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.33 }, "-=0.4")
+        .fromTo(barRef.current, { scaleX: 0, transformOrigin: "left" }, { scaleX: 1, duration: 0.45 }, "-=0.4")
+        .fromTo(quoteRef.current, { opacity: 0, y: 32, filter: "blur(4px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.59 }, "-=0.5");
 
       /* Ambient photo glow pulse */
       gsap.to(photoRef.current, {

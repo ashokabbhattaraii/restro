@@ -37,7 +37,7 @@ export default function MissionVisionSection() {
           { opacity: 0, y: 60, scale: 0.94, rotateY: i === 0 ? 8 : -8 },
           {
             opacity: 1, y: 0, scale: 1, rotateY: 0,
-            duration: 0.9, delay: i * 0.15, ease: "power3.out",
+            duration: 0.59, delay: i * 0.15, ease: "power3.out",
             scrollTrigger: { trigger: card, start: "top 82%", once: true },
           }
         );
@@ -50,7 +50,7 @@ export default function MissionVisionSection() {
           start: "top 78%",
           once: true,
           onEnter: () => {
-            gsap.to(points, { opacity: 1, x: 0, duration: 0.5, stagger: 0.1, delay: 0.4 + i * 0.15 });
+            gsap.to(points, { opacity: 1, x: 0, duration: 0.33, stagger: 0.08, delay: 0.4 + i * 0.15 });
           },
         });
       });

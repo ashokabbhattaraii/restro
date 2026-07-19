@@ -43,11 +43,15 @@ export function toBase64(value: string) {
   return window.btoa(value);
 }
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+
 export const fetcher = async <T>(url: string): Promise<T> => {
-  const response = await fetch(url);
+  const response = await fetch(`${API_BASE}${url}`, {
+    credentials: 'include',
+  });
 
   if (!response.ok) {
-    throw new Error("Request failed");
+    throw new Error('Request failed');
   }
 
   return response.json() as Promise<T>;

@@ -40,10 +40,10 @@ export default function ReservationCTASection() {
         defaults: { ease: "power3.out" },
       });
 
-      tl.fromTo(headingRef.current, { opacity: 0, y: 44, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.9 })
-        .fromTo(textRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.7 }, "-=0.5")
-        .fromTo(btnRef.current, { opacity: 0, y: 20, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.65 }, "-=0.45")
-        .fromTo(phoneRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.55 }, "-=0.35");
+      tl.fromTo(headingRef.current, { opacity: 0, y: 44, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.59 })
+        .fromTo(textRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.45 }, "-=0.5")
+        .fromTo(btnRef.current, { opacity: 0, y: 20, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.42 }, "-=0.45")
+        .fromTo(phoneRef.current, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.36 }, "-=0.35");
     });
 
     return () => ctx.revert();

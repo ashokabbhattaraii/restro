@@ -58,22 +58,68 @@ export default function Navbar() {
     if (open) {
       document.body.style.overflow = "hidden";
       gsap.set(wrapper, { display: "block" });
-      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" });
-      gsap.fromTo(sidebar, { x: "100%" }, { x: "0%", duration: 0.4, ease: "power3.out" });
+      gsap.fromTo(overlay, { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power2.out" });
+      gsap.fromTo(sidebar, { x: "100%" }, { x: "0%", duration: 0.3, ease: "power3.out" });
       gsap.fromTo(
         itemsRef.current.filter(Boolean),
         { opacity: 0, x: 30 },
-        { opacity: 1, x: 0, duration: 0.35, delay: 0.1, stagger: 0.05, ease: "power2.out" }
+        { opacity: 1, x: 0, duration: 0.25, delay: 0.08, stagger: 0.04, ease: "power2.out" }
       );
     } else {
       document.body.style.overflow = "";
       const tl = gsap.timeline({ onComplete: () => { gsap.set(wrapper, { display: "none" }); } });
-      tl.to(itemsRef.current.filter(Boolean), { opacity: 0, x: 20, duration: 0.15, stagger: 0.03, ease: "power2.in" }, 0);
-      tl.to(sidebar, { x: "100%", duration: 0.3, ease: "power3.in" }, 0);
-      tl.to(overlay, { opacity: 0, duration: 0.3, ease: "power2.in" }, 0);
+      tl.to(itemsRef.current.filter(Boolean), { opacity: 0, x: 20, duration: 0.1, stagger: 0.02, ease: "power2.in" }, 0);
+      tl.to(sidebar, { x: "100%", duration: 0.2, ease: "power3.in" }, 0);
+      tl.to(overlay, { opacity: 0, duration: 0.2, ease: "power2.in" }, 0);
     }
 
     return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  // Swipe to close mobile nav
+  useEffect(() => {
+    const sidebar = mobileNavRef.current?.querySelector(".mobile-nav-sidebar") as HTMLElement | null;
+    if (!sidebar || !open) return;
+
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches[0].clientX < window.innerWidth * 0.15) return;
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      gsap.set(sidebar, { clearProps: "transform" });
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isDragging) return;
+      currentX = e.touches[0].clientX;
+      const diff = startX - currentX;
+      if (diff > 0) {
+        gsap.set(sidebar, { x: -diff });
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      const diff = startX - currentX;
+      if (diff > 80) {
+        setOpen(false);
+      } else {
+        gsap.to(sidebar, { x: "0%", duration: 0.25, ease: "power2.out" });
+      }
+    };
+
+    sidebar.addEventListener("touchstart", onTouchStart, { passive: true });
+    sidebar.addEventListener("touchmove", onTouchMove, { passive: true });
+    sidebar.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      sidebar.removeEventListener("touchstart", onTouchStart);
+      sidebar.removeEventListener("touchmove", onTouchMove);
+      sidebar.removeEventListener("touchend", onTouchEnd);
+    };
   }, [open]);
 
   const isActive = (href: string) =>

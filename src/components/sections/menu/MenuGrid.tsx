@@ -3,13 +3,13 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import Image from "next/image";
 import CategoryTabs from "@/components/sections/menu/CategoryTabs";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
-import { menuCategories, menuItems as staticItems } from "@/lib/constants";
-import { fetcher, slugify } from "@/lib/utils";
+import { menuCategories } from "@/lib/constants";
+import { slugify } from "@/lib/utils";
+import { useMenuItems } from "@/hooks/useApi";
 import type { MenuItem } from "@/types";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,14 +17,12 @@ gsap.registerPlugin(ScrollTrigger);
 function MenuItemCard({ item }: { item: MenuItem }) {
   return (
     <Card className="menu-item">
-      {/* Image */}
-      <div style={{ position: "relative", minHeight: "88px", width: "104px", flexShrink: 0 }}>
+      <div className="menu-item-img">
         <Image
           src={item.image}
           alt={item.name}
           fill
-          style={{ objectFit: "cover", borderRadius: "8px" }}
-          sizes="104px"
+          sizes="(max-width: 768px) 100vw, 104px"
         />
       </div>
 
@@ -47,7 +45,7 @@ function MenuItemCard({ item }: { item: MenuItem }) {
 
 export default function MenuGrid() {
   const [active, setActive] = useState("All");
-  const { data = staticItems } = useSWR<MenuItem[]>("/api/menu", fetcher);
+  const { data: data = [] } = useMenuItems();
   const gridRef = useRef<HTMLDivElement>(null);
   const prevActive = useRef(active);
 
@@ -72,7 +70,6 @@ export default function MenuGrid() {
     }, {});
   }, [active, data]);
 
-  /* Animate items on category switch */
   useEffect(() => {
     if (!gridRef.current) return;
     const items = gridRef.current.querySelectorAll<HTMLElement>(".menu-item-wrap");
@@ -85,10 +82,9 @@ export default function MenuGrid() {
       gsap.fromTo(
         items,
         { opacity: 0, y: 30, scale: 0.96 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.06, ease: "power3.out" }
+        { opacity: 1, y: 0, scale: 1, duration: 0.33, stagger: 0.05, ease: "power3.out" }
       );
     } else {
-      /* Initial page load — scroll-triggered */
       const sections = gridRef.current.querySelectorAll<HTMLElement>(".menu-category");
       sections.forEach((section) => {
         const sectionItems = section.querySelectorAll<HTMLElement>(".menu-item-wrap");
@@ -98,7 +94,7 @@ export default function MenuGrid() {
           start: "top 85%",
           once: true,
           onEnter: () => {
-            gsap.to(sectionItems, { opacity: 1, y: 0, duration: 0.55, stagger: 0.07, ease: "power2.out" });
+            gsap.to(sectionItems, { opacity: 1, y: 0, duration: 0.36, stagger: 0.05, ease: "power2.out" });
           },
         });
       });
@@ -122,7 +118,7 @@ export default function MenuGrid() {
 
               <div className="menu-grid">
                 {items.map((item) => (
-                  <div key={item.id} className="menu-item-wrap" style={{ opacity: 0 }}>
+                  <div key={item._id || item.id} className="menu-item-wrap" style={{ opacity: 0 }}>
                     <MenuItemCard item={item} />
                   </div>
                 ))}

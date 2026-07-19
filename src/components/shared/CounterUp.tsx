@@ -23,7 +23,7 @@ export default function CounterUp({ value, suffix = "" }: { value: number; suffi
       onEnter: () => {
         gsap.to(obj, {
           val: value,
-          duration: 1.2,
+          duration: 0.78,
           ease: "power2.out",
           onUpdate: () => setCount(Math.round(obj.val)),
         });

@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Button from "@/components/ui/Button";
 import SectionLabel from "@/components/ui/SectionLabel";
 import CounterUp from "@/components/shared/CounterUp";
-import ParallaxImage from "@/components/shared/ParallaxImage";
 import { images, restaurant } from "@/lib/constants";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,6 +16,14 @@ const STATS = [
   { value: 2018, label: "Founded", suffix: "" },
   { value: 3, label: "Cuisines", suffix: "+" },
   { value: 240, label: "Happy Guests", suffix: "+" },
+];
+
+const SLIDE_IMAGES = [
+  "https://images.unsplash.com/photo-1544984243-ec57ea16fe25?auto=format&fit=crop&w=2200&q=90",
+  "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2200&q=90",
+  "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?auto=format&fit=crop&w=2200&q=90",
+  "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=2200&q=90",
+  "https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=2200&q=90",
 ];
 
 export default function HeroSection() {
@@ -32,47 +39,55 @@ export default function HeroSection() {
   const orb2Ref = useRef<HTMLDivElement>(null);
   const hairlineRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const slidesRef = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
+      /* ── Background slideshow ── */
+      const slides = slidesRef.current.filter(Boolean) as HTMLDivElement[];
+      if (slides.length > 1) {
+        gsap.set(slides.slice(1), { autoAlpha: 0 });
+        const slideTl = gsap.timeline({ repeat: -1, paused: false });
+        slides.forEach((slide, i) => {
+          if (i === 0) return;
+          slideTl
+            .to(slides[i - 1], { autoAlpha: 0, duration: 1.2, ease: "power2.inOut" }, `>${5}`)
+            .to(slide, { autoAlpha: 1, duration: 1.2, ease: "power2.inOut" }, "<");
+        });
+        slideTl.to(slides[slides.length - 1], { autoAlpha: 0, duration: 1.2, ease: "power2.inOut" }, `>${5}`);
+        slideTl.to(slides[0], { autoAlpha: 1, duration: 1.2, ease: "power2.inOut" }, "<");
+      }
+
       /* ── Rings: stagger-scale in ── */
       gsap.fromTo(
         [ring1Ref.current, ring2Ref.current, ring3Ref.current],
         { scale: 0.4, opacity: 0 },
-        {
-          scale: 1,
-          opacity: 1,
-          duration: 2.2,
-          stagger: 0.22,
-          ease: "power4.out",
-          delay: 0.1,
-        }
+        { scale: 1, opacity: 1, duration: 1.43, stagger: 0.17, ease: "power4.out", delay: 0.1 }
       );
 
       /* ── Floating orbs ── */
       gsap.fromTo(
         [orb1Ref.current, orb2Ref.current],
         { scale: 0, opacity: 0 },
-        { scale: 1, opacity: 1, duration: 1.6, stagger: 0.4, ease: "power3.out", delay: 0.3 }
+        { scale: 1, opacity: 1, duration: 0.68, stagger: 0.3, ease: "power3.out", delay: 0.3 }
       );
 
       /* ── Main content entrance ── */
       const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.2 });
-
-      tl.fromTo(labelRef.current, { opacity: 0, y: 32, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.8 })
+      tl.fromTo(labelRef.current, { opacity: 0, y: 32, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.52 })
         .fromTo(
           linesRef.current.filter(Boolean),
           { opacity: 0, y: 80, rotateX: -25 },
-          { opacity: 1, y: 0, rotateX: 0, duration: 1.1, stagger: 0.18, transformOrigin: "bottom center" },
+          { opacity: 1, y: 0, rotateX: 0, duration: 0.72, stagger: 0.14, transformOrigin: "bottom center" },
           "-=0.5"
         )
-        .fromTo(subtitleRef.current, { opacity: 0, y: 28, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.75 }, "-=0.55")
-        .fromTo(actionsRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.65 }, "-=0.45")
-        .fromTo(hairlineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.9, ease: "power2.out", transformOrigin: "left" }, "-=0.35")
+        .fromTo(subtitleRef.current, { opacity: 0, y: 28, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.49 }, "-=0.55")
+        .fromTo(actionsRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.42 }, "-=0.45")
+        .fromTo(hairlineRef.current, { scaleX: 0, opacity: 0 }, { scaleX: 1, opacity: 1, duration: 0.59, ease: "power2.out", transformOrigin: "left" }, "-=0.35")
         .fromTo(
           statsRef.current?.querySelectorAll(".stat-card") ?? [],
           { opacity: 0, y: 40, scale: 0.92 },
-          { opacity: 1, y: 0, scale: 1, duration: 0.65, stagger: 0.1 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.42, stagger: 0.08 },
           "-=0.55"
         );
 
@@ -96,7 +111,17 @@ export default function HeroSection() {
 
   return (
     <section className="home-hero motif" ref={sectionRef} style={{ perspective: "1000px" }}>
-      <ParallaxImage src={images.hero} alt="Moonlit luxury dining room" priority quality={90} />
+      {/* Slideshow background */}
+      <div className="hero-slideshow" aria-hidden="true">
+        {SLIDE_IMAGES.map((src, i) => (
+          <div
+            key={src}
+            ref={(el) => { slidesRef.current[i] = el; }}
+            className="hero-slide"
+            style={{ backgroundImage: `url(${src})` }}
+          />
+        ))}
+      </div>
       <div className="hero-grain" />
 
       {/* Decorative rings */}
@@ -104,13 +129,8 @@ export default function HeroSection() {
         ref={ring1Ref}
         className="hero-ring"
         style={{
-          width: "min(90vw, 900px)",
-          aspectRatio: "1",
-          borderWidth: "1px",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) rotate(45deg)",
-          opacity: 0,
+          width: "min(90vw, 900px)", aspectRatio: "1", borderWidth: "1px",
+          top: "50%", left: "50%", transform: "translate(-50%, -50%) rotate(45deg)", opacity: 0,
         }}
         aria-hidden="true"
       />
@@ -118,14 +138,9 @@ export default function HeroSection() {
         ref={ring2Ref}
         className="hero-ring"
         style={{
-          width: "min(65vw, 650px)",
-          aspectRatio: "1",
-          borderWidth: "1px",
-          borderColor: "rgba(242,202,80,0.05)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          opacity: 0,
+          width: "min(65vw, 650px)", aspectRatio: "1", borderWidth: "1px",
+          borderColor: "rgba(242,202,80,0.05)", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%)", opacity: 0,
         }}
         aria-hidden="true"
       />
@@ -133,14 +148,9 @@ export default function HeroSection() {
         ref={ring3Ref}
         className="hero-ring"
         style={{
-          width: "min(38vw, 380px)",
-          aspectRatio: "1",
-          borderWidth: "1px",
-          borderColor: "rgba(242,202,80,0.07)",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%) rotate(22deg)",
-          opacity: 0,
+          width: "min(38vw, 380px)", aspectRatio: "1", borderWidth: "1px",
+          borderColor: "rgba(242,202,80,0.07)", top: "50%", left: "50%",
+          transform: "translate(-50%, -50%) rotate(22deg)", opacity: 0,
         }}
         aria-hidden="true"
       />
@@ -149,32 +159,18 @@ export default function HeroSection() {
       <div
         ref={orb1Ref}
         style={{
-          position: "absolute",
-          top: "18%",
-          right: "10%",
-          width: "340px",
-          height: "340px",
-          background: "radial-gradient(circle, rgba(242,202,80,0.07) 0%, transparent 70%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          opacity: 0,
-          zIndex: 1,
+          position: "absolute", top: "18%", right: "10%", width: "340px", height: "340px",
+          background: "radial-gradient(circle, rgba(242,202,80,0.10) 0%, transparent 70%)",
+          borderRadius: "50%", pointerEvents: "none", opacity: 0, zIndex: 1,
         }}
         aria-hidden="true"
       />
       <div
         ref={orb2Ref}
         style={{
-          position: "absolute",
-          bottom: "22%",
-          left: "8%",
-          width: "260px",
-          height: "260px",
-          background: "radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 70%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-          opacity: 0,
-          zIndex: 1,
+          position: "absolute", bottom: "22%", left: "8%", width: "260px", height: "260px",
+          background: "radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 70%)",
+          borderRadius: "50%", pointerEvents: "none", opacity: 0, zIndex: 1,
         }}
         aria-hidden="true"
       />
@@ -218,9 +214,7 @@ export default function HeroSection() {
           style={{
             height: "1px",
             background: "linear-gradient(90deg, transparent, rgba(242,202,80,0.5), transparent)",
-            marginBottom: "0",
-            opacity: 0,
-            transformOrigin: "left",
+            marginBottom: "0", opacity: 0, transformOrigin: "left",
           }}
         />
       </div>
@@ -228,9 +222,7 @@ export default function HeroSection() {
       <div className="container hero-stats" ref={statsRef}>
         {STATS.map(({ value, label, suffix }) => (
           <div className="stat-card" key={label}>
-            <strong>
-              <CounterUp value={value} />{suffix}
-            </strong>
+            <strong><CounterUp value={value} />{suffix}</strong>
             <span>{label}</span>
           </div>
         ))}

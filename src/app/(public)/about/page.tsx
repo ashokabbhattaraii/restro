@@ -1,3 +1,4 @@
+import ErrorBoundary from "@/components/shared/ErrorBoundary";
 import CulturalSection from "@/components/sections/about/CulturalSection";
 import MissionVisionSection from "@/components/sections/about/MissionVisionSection";
 import OwnerMessageSection from "@/components/sections/about/OwnerMessageSection";
@@ -7,11 +8,11 @@ import TeamSection from "@/components/sections/about/TeamSection";
 export default function AboutPage() {
   return (
     <main>
-      <StorySection />
-      <MissionVisionSection />
-      <OwnerMessageSection />
-      <TeamSection />
-      <CulturalSection />
+      <ErrorBoundary><StorySection /></ErrorBoundary>
+      <ErrorBoundary><MissionVisionSection /></ErrorBoundary>
+      <ErrorBoundary><OwnerMessageSection /></ErrorBoundary>
+      <ErrorBoundary><TeamSection /></ErrorBoundary>
+      <ErrorBoundary><CulturalSection /></ErrorBoundary>
     </main>
   );
 }

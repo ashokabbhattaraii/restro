@@ -1,5 +1,6 @@
 export type MenuItem = {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   category: "Nepali" | "Indian" | "Chinese" | "BBQ & Grill" | "Drinks & Bar" | "Desserts";
   description: string;
@@ -11,15 +12,18 @@ export type MenuItem = {
 };
 
 export type GalleryImage = {
-  id: string;
+  _id?: string;
+  id?: string;
   category: "Food" | "Dining Area" | "Bar" | "Events" | "Exterior";
   title: string;
   image: string;
   shape?: "tall" | "wide" | "";
+  order?: number;
 };
 
 export type EventItem = {
-  id: string;
+  _id?: string;
+  id?: string;
   date: string;
   time?: string;
   title: string;
@@ -30,7 +34,8 @@ export type EventItem = {
 };
 
 export type StaffMember = {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   role: string;
   department: string;
@@ -40,7 +45,8 @@ export type StaffMember = {
 };
 
 export type Reservation = {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   phone: string;
   email?: string;
@@ -48,11 +54,14 @@ export type Reservation = {
   time: string;
   guests: number;
   occasion?: string;
-  status: "Confirmed" | "Pending" | "Cancelled";
+  requests?: string;
+  remarks?: string;
+  status: "Confirmed" | "Pending" | "Cancelled" | "Contacted";
 };
 
 export type Message = {
-  id: string;
+  _id?: string;
+  id?: string;
   name: string;
   phone?: string;
   email?: string;

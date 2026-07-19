@@ -3,18 +3,15 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Card from "@/components/ui/Card";
-import { fetcher } from "@/lib/utils";
-import { staff as staticStaff } from "@/lib/constants";
-import type { StaffMember } from "@/types";
+import { useStaff } from "@/hooks/useApi";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function TeamSection() {
-  const { data = staticStaff } = useSWR<StaffMember[]>("/api/staff?public=true", fetcher);
+  const { data: members = [] } = useStaff(true);
   const gridRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +21,7 @@ export default function TeamSection() {
         headerRef.current,
         { opacity: 0, y: 36 },
         {
-          opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          opacity: 1, y: 0, duration: 0.52, ease: "power3.out",
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
@@ -37,26 +34,23 @@ export default function TeamSection() {
         start: "top 80%",
         once: true,
         onEnter: () => {
-          gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.12, ease: "power3.out" });
+          gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.09, ease: "power3.out" });
         },
       });
 
-      /* Photo hover glow */
       (gridRef.current?.querySelectorAll(".team-photo") ?? []).forEach((photo) => {
         const el = photo as HTMLElement;
         el.addEventListener("mouseenter", () => {
-          gsap.to(el, { boxShadow: "0 0 30px rgba(242,202,80,0.35)", duration: 0.35 });
+          gsap.to(el, { boxShadow: "0 0 30px rgba(242,202,80,0.35)", duration: 0.23 });
         });
         el.addEventListener("mouseleave", () => {
-          gsap.to(el, { boxShadow: "0 0 0 rgba(242,202,80,0)", duration: 0.45 });
+          gsap.to(el, { boxShadow: "0 0 0 rgba(242,202,80,0)", duration: 0.29 });
         });
       });
     });
 
     return () => ctx.revert();
-  }, [data]);
-
-  const members = data.length > 0 ? data : staticStaff;
+  }, [members]);
 
   return (
     <section className="section" id="team">
@@ -71,7 +65,7 @@ export default function TeamSection() {
 
         <div className="team-grid" ref={gridRef}>
           {members.map((member) => (
-            <div key={member.id} className="team-card-wrap" style={{ opacity: 0 }}>
+            <div key={member._id || member.id} className="team-card-wrap" style={{ opacity: 0 }}>
               <Card className="team-card">
                 <div className="team-photo">
                   <Image

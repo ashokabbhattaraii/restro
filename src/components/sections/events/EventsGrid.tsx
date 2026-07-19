@@ -3,26 +3,24 @@
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import useSWR from "swr";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
-import { fetcher } from "@/lib/utils";
-import { events as staticEvents } from "@/lib/constants";
+import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 
 gsap.registerPlugin(ScrollTrigger);
 
 export default function EventsGrid() {
-  const { data = staticEvents } = useSWR<EventItem[]>("/api/events", fetcher);
+  const { data: events = [] } = useEvents();
   const sectionRef = useRef<HTMLElement>(null);
   const featuredRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const [featured, ...rest] = data.length > 0 ? data : staticEvents;
+  const [featured, ...rest] = events as EventItem[];
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -30,24 +28,22 @@ export default function EventsGrid() {
         headerRef.current,
         { opacity: 0, y: 36 },
         {
-          opacity: 1, y: 0, duration: 0.8, ease: "power3.out",
+          opacity: 1, y: 0, duration: 0.52, ease: "power3.out",
           scrollTrigger: { trigger: headerRef.current, start: "top 85%", once: true },
         }
       );
 
-      /* Featured event reveal */
       if (featuredRef.current) {
         gsap.fromTo(
           featuredRef.current,
           { opacity: 0, y: 50, scale: 0.96 },
           {
-            opacity: 1, y: 0, scale: 1, duration: 0.95, ease: "power3.out",
+            opacity: 1, y: 0, scale: 1, duration: 0.62, ease: "power3.out",
             scrollTrigger: { trigger: featuredRef.current, start: "top 82%", once: true },
           }
         );
       }
 
-      /* Grid cards stagger */
       if (gridRef.current) {
         const cards = gridRef.current.querySelectorAll<HTMLElement>(".event-grid-card");
         gsap.set(cards, { opacity: 0, y: 60, scale: 0.92 });
@@ -56,14 +52,14 @@ export default function EventsGrid() {
           start: "top 80%",
           once: true,
           onEnter: () => {
-            gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.7, stagger: 0.14, ease: "power3.out" });
+            gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.11, ease: "power3.out" });
           },
         });
       }
     });
 
     return () => ctx.revert();
-  }, [data]);
+  }, [events]);
 
   return (
     <section className="section" id="upcoming" ref={sectionRef}>
@@ -77,11 +73,9 @@ export default function EventsGrid() {
           />
         </div>
 
-        {/* Featured event */}
         {featured && (
           <div ref={featuredRef} style={{ opacity: 0, marginBottom: "28px" }}>
             <Card className="featured-event" style={{ overflow: "hidden" }}>
-              {/* Poster image */}
               <div style={{
                 position: "relative",
                 minHeight: "380px",
@@ -103,7 +97,6 @@ export default function EventsGrid() {
                 }} />
               </div>
 
-              {/* Content */}
               <div className="events-featured-body">
                 <Badge>{featured.date} · {featured.time}</Badge>
                 {featured.type && (
@@ -126,10 +119,9 @@ export default function EventsGrid() {
           </div>
         )}
 
-        {/* Event grid */}
         <div className="event-grid" ref={gridRef}>
           {rest.map((event) => (
-            <div key={event.id} className="event-grid-card" style={{ opacity: 0 }}>
+            <div key={event._id || event.id} className="event-grid-card" style={{ opacity: 0 }}>
               <div style={{
                 position: "relative",
                 minHeight: "340px",

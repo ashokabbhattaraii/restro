@@ -12,7 +12,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAdmin } from "@/context/AdminContext";
 import { restaurant } from "@/lib/constants";
 
@@ -28,6 +28,7 @@ const links = [
 
 export default function AdminSidebar({ open, onClose }: { open?: boolean; onClose?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { logout, admin } = useAdmin();
 
   return (
@@ -38,10 +39,10 @@ export default function AdminSidebar({ open, onClose }: { open?: boolean; onClos
       )}
       <aside className={`admin-sidebar ${open ? "admin-sidebar--open" : ""}`}>
         <div className="admin-sidebar-header">
-          <div className="admin-logo flex items-center gap-2">
-            <img src="/logo.png" alt={`${restaurant.name} Logo`} className="h-8 w-auto rounded-full object-contain filter drop-shadow-[0_0_6px_rgba(230,195,98,0.25)]" />
-            <strong className="tracking-tight text-lg">NR&B</strong>
-            <span>Admin</span>
+          <div className="admin-logo">
+            <strong>SANGITA</strong>
+            <span>Admin Panel</span>
+            <span className="logo-tagline">Restro &bull; Bar &bull; Events</span>
           </div>
           {onClose && (
             <button className="admin-sidebar-close" type="button" onClick={onClose} aria-label="Close menu">
@@ -74,7 +75,7 @@ export default function AdminSidebar({ open, onClose }: { open?: boolean; onClos
             <strong>{admin?.name || "Admin"}</strong>
             <span>Manager</span>
           </div>
-          <button type="button" className="admin-logout-btn" onClick={logout} aria-label="Logout">
+          <button type="button" className="admin-logout-btn" onClick={() => { logout(); router.push('/'); }} aria-label="Logout">
             <LogOut size={15} />
           </button>
         </div>
