@@ -1,9 +1,13 @@
+"use client";
+
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { restaurant } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
 
 export default function MapEmbed() {
-  const mapsUrl = "https://www.google.com/maps?q=46001%20As%20Sulaymaniyah%20Iraq&output=embed";
+  const { config } = useConfig();
+  const location = encodeURIComponent(config.location);
+  const mapsUrl = `https://www.google.com/maps?q=${location}&output=embed`;
 
   return (
     <section className="map-section">
@@ -13,12 +17,12 @@ export default function MapEmbed() {
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
           src={mapsUrl}
-          title="Map showing As Sulaymaniyah, Iraq"
+          title={`Map showing ${config.location}`}
         />
         <Card className="map-card">
           <h2>Find Us</h2>
-          <p>{restaurant.location}</p>
-          <Button href="https://www.google.com/maps/search/?api=1&query=46001%20As%20Sulaymaniyah%20Iraq">
+          <p>{config.location}</p>
+          <Button href={`https://www.google.com/maps/search/?api=1&query=${location}`}>
             Get Directions
           </Button>
         </Card>

@@ -41,6 +41,9 @@ type ModalMode = "view" | "edit" | "delete" | "add" | null;
 export default function AdminReservations() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [datePreset, setDatePreset] = useState("all");
   const [selectedRow, setSelectedRow] = useState<Reservation | null>(null);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [remarks, setRemarks] = useState("");
@@ -63,6 +66,29 @@ export default function AdminReservations() {
     300
   );
 
+  const applyDatePreset = useCallback((preset: string) => {
+    setDatePreset(preset);
+    setCurrentPage(1);
+    const now = new Date();
+    if (preset === "today") {
+      const s = now.toISOString().slice(0, 10);
+      setDateFrom(s);
+      setDateTo(s);
+    } else if (preset === "week") {
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      setDateFrom(monday.toISOString().slice(0, 10));
+      setDateTo(now.toISOString().slice(0, 10));
+    } else if (preset === "month") {
+      const first = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+      setDateFrom(first);
+      setDateTo(now.toISOString().slice(0, 10));
+    } else {
+      setDateFrom("");
+      setDateTo("");
+    }
+  }, []);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return reservations.filter((r) => {
@@ -71,9 +97,10 @@ export default function AdminReservations() {
         r.phone.toLowerCase().includes(q) ||
         (r.email || "").toLowerCase().includes(q);
       const matchStatus = status === "all" || r.status.toLowerCase() === status;
-      return matchSearch && matchStatus;
+      const matchDate = (!dateFrom || r.date >= dateFrom) && (!dateTo || r.date <= dateTo);
+      return matchSearch && matchStatus && matchDate;
     });
-  }, [reservations, search, status]);
+  }, [reservations, search, status, dateFrom, dateTo]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const paginatedRows = useMemo(
@@ -197,6 +224,40 @@ export default function AdminReservations() {
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
+        </div>
+
+        <div className="admin-filters">
+          <div className="admin-filters-scroll">
+            {[
+              { value: "all", label: "All" },
+              { value: "today", label: "Today" },
+              { value: "week", label: "This Week" },
+              { value: "month", label: "This Month" },
+            ].map(({ value, label }) => (
+              <button
+                key={value}
+                className={`admin-chip ${datePreset === value ? "admin-chip--active" : ""}`}
+                onClick={() => applyDatePreset(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <input
+            className="admin-input"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => { setDateFrom(e.target.value); setDatePreset(""); setCurrentPage(1); }}
+            title="From date"
+          />
+          <span style={{ alignSelf: "center", color: "var(--a-text-3)", fontSize: 13 }}>—</span>
+          <input
+            className="admin-input"
+            type="date"
+            value={dateTo}
+            onChange={(e) => { setDateTo(e.target.value); setDatePreset(""); setCurrentPage(1); }}
+            title="To date"
+          />
         </div>
 
         <DataTable<Reservation>

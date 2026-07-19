@@ -1,6 +1,6 @@
 "use client";
 
-import { menuCategories } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
 import { slugify } from "@/lib/utils";
 
 export default function CategoryTabs({
@@ -10,16 +10,21 @@ export default function CategoryTabs({
   active: string;
   onChange: (category: string) => void;
 }) {
+  const { config, loading } = useConfig();
+  const categories = config.menuCategories.length > 0 ? config.menuCategories : ["All", "Nepali", "Indian", "Chinese", "BBQ & Grill", "Drinks & Bar", "Desserts"];
+
   const handleClick = (category: string) => {
     onChange(category);
     const url = category === "All" ? window.location.pathname : `#${slugify(category)}`;
     window.history.replaceState(null, "", url);
   };
 
+  if (loading) return null;
+
   return (
     <div className="sticky-tabs">
       <div className="container tab-row">
-        {menuCategories.map((category) => (
+        {categories.map((category) => (
           <button
             className={active === category ? "active" : ""}
             key={category}

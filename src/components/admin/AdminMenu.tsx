@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { Upload, FileSpreadsheet, X, Wine, UtensilsCrossed, Download, Trash2, Loader2, Plus } from "lucide-react";
+import { useState, useCallback, useRef, useMemo } from "react";
+import { Upload, FileSpreadsheet, X, Wine, UtensilsCrossed, Download, Trash2, Loader2, Plus, Settings2 } from "lucide-react";
 import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import FoodImage from "@/components/shared/FoodImage";
 import AdminModal from "@/components/admin/AdminModal";
 import Toggle from "@/components/ui/Toggle";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { useConfig } from "@/hooks/useConfig";
+import { useUpdateConfig } from "@/hooks/useUpdateConfig";
 import {
   useMenuItemsAdmin,
   useCreateMenuItem,
@@ -16,11 +19,97 @@ import {
 } from "@/hooks/useApi";
 import type { MenuItem } from "@/types";
 
-const CATEGORIES = ["all", "nepali", "indian", "chinese", "bbq & grill", "drinks & bar", "desserts"];
+function CategoryManager({
+  categories,
+  onSave,
+  isPending,
+  onClose,
+}: {
+  categories: string[];
+  onSave: (cats: string[]) => void;
+  isPending: boolean;
+  onClose: () => void;
+}) {
+  const [newCat, setNewCat] = useState("");
+  const [localCats, setLocalCats] = useState(categories.filter((c) => c.toLowerCase() !== "all"));
+
+  const add = () => {
+    const trimmed = newCat.trim();
+    if (!trimmed) return;
+    if (localCats.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("Category already exists");
+      return;
+    }
+    setLocalCats((prev) => [...prev, trimmed]);
+    setNewCat("");
+  };
+
+  const remove = (idx: number) => {
+    setLocalCats((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input
+          className="admin-input"
+          type="text"
+          placeholder="New category name…"
+          value={newCat}
+          onChange={(e) => setNewCat(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          style={{ flex: 1 }}
+        />
+        <button type="button" className="admin-btn-primary" onClick={add}>
+          <Plus size={13} /> Add
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
+        {localCats.length === 0 && <p className="admin-empty" style={{ padding: 16 }}>No categories yet.</p>}
+        {localCats.map((cat, idx) => (
+          <div
+            key={cat}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "8px 12px",
+              background: "var(--a-gold-dim)",
+              borderRadius: 6,
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>{cat}</span>
+            <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={() => remove(idx)}>
+              <X size={12} /> Remove
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-detail-actions">
+        <button
+          type="button"
+          className="admin-btn-primary"
+          onClick={() => onSave(["All", ...localCats])}
+          disabled={isPending}
+        >
+          {isPending ? <><Loader2 size={13} className="animate-spin" /> Saving…</> : "Save Categories"}
+        </button>
+        <button type="button" className="admin-btn-sm" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminMenu() {
-  const [filter, setFilter] = useState("all");
+  const { config } = useConfig();
+  const updateConfig = useUpdateConfig();
+  const categories = useMemo(() => config.menuCategories, [config.menuCategories]);
+
+  const [filter, setFilter] = useState("All");
   const [addMode, setAddMode] = useState(false);
+  const [catMode, setCatMode] = useState(false);
   const [editItem, setEditItem] = useState<MenuItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null);
   const [editFeatured, setEditFeatured] = useState(false);
@@ -31,20 +120,35 @@ export default function AdminMenu() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<Partial<MenuItem>[]>([]);
   const [importStatus, setImportStatus] = useState<"" | "loading" | "done" | "error">("");
+  const [imageUrl, setImageUrl] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
+
   const { data: menuItems = [] } = useMenuItemsAdmin();
   const createMenuItem = useCreateMenuItem();
   const updateMenuItem = useUpdateMenuItem();
   const deleteMenuItem = useDeleteMenuItem();
   const bulkCreate = useBulkCreateMenuItems();
 
-  const filtered = filter === "all" ? menuItems : menuItems.filter((i) => i.category.toLowerCase() === filter);
+  const filtered = useMemo(() => {
+    return filter === "All" ? menuItems : menuItems.filter((i) => i.category === filter);
+  }, [filter, menuItems]);
 
   const openEdit = (item: MenuItem) => {
     setEditItem(item);
     setEditFeatured(Boolean(item.featured));
     setEditVisible(Boolean(item.visible));
+    setImageUrl(item.image || "");
+  };
+
+  const closeEdit = () => {
+    setEditItem(null);
+    setImageUrl("");
+  };
+
+  const openAdd = () => {
+    setAddMode(true);
+    setImageUrl("");
   };
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,11 +162,12 @@ export default function AdminMenu() {
         category: (form.elements.namedItem("category") as HTMLSelectElement).value as MenuItem["category"],
         price: (form.elements.namedItem("price") as HTMLInputElement).value,
         description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
+        image: imageUrl,
         featured: editFeatured,
         visible: editVisible,
       });
       toast.success("Menu item updated");
-      setEditItem(null);
+      closeEdit();
     } catch {
       toast.error("Failed to update menu item");
     }
@@ -77,11 +182,13 @@ export default function AdminMenu() {
         category: (form.elements.namedItem("category") as HTMLSelectElement).value as MenuItem["category"],
         price: (form.elements.namedItem("price") as HTMLInputElement).value,
         description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
+        image: imageUrl,
         featured: (form.elements.namedItem("featured") as HTMLInputElement).checked,
         visible: true,
       });
       toast.success("Menu item created");
       setAddMode(false);
+      setImageUrl("");
     } catch {
       toast.error("Failed to create menu item");
     }
@@ -133,6 +240,16 @@ export default function AdminMenu() {
       toast.error("Failed to update visibility");
     }
   };
+
+  const handleSaveCategories = useCallback(async (cats: string[]) => {
+    try {
+      await updateConfig.mutateAsync({ menuCategories: cats });
+      toast.success("Categories updated");
+      setCatMode(false);
+    } catch {
+      toast.error("Failed to update categories");
+    }
+  }, [updateConfig]);
 
   const parseFile = (file: File) => {
     const reader = new FileReader();
@@ -211,8 +328,10 @@ export default function AdminMenu() {
     toast.success("Example sheet downloaded");
   };
 
-  const barItems = filter === "all" ? menuItems.filter((i) => i.category.toLowerCase() === "drinks & bar") : [];
-  const foodItems = filter === "all" ? menuItems.filter((i) => i.category.toLowerCase() !== "drinks & bar") : filtered;
+  const barItems = filter === "All" ? menuItems.filter((i) => i.category.toLowerCase() === "drinks & bar") : [];
+  const foodItems = filter === "All" ? menuItems.filter((i) => i.category.toLowerCase() !== "drinks & bar") : filtered;
+
+  const categoryOptions = categories.filter((c) => c !== "All");
 
   return (
     <div className="admin-page-content">
@@ -221,7 +340,7 @@ export default function AdminMenu() {
           <h2>Menu Items</h2>
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
             <span className="admin-panel-badge">{menuItems.length} items</span>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setAddMode(true)}>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={openAdd}>
               <Plus size={13} /> Add Item
             </button>
             <button type="button" className="admin-btn-sm" onClick={() => setImportMode((v) => !v)}>
@@ -233,6 +352,9 @@ export default function AdminMenu() {
               onClick={() => setBulkMode((v) => !v)}
             >
               <Upload size={13} /> Bulk Price
+            </button>
+            <button type="button" className="admin-btn-sm" onClick={() => setCatMode(true)}>
+              <Settings2 size={13} /> Categories
             </button>
           </div>
         </div>
@@ -337,20 +459,20 @@ export default function AdminMenu() {
         )}
 
         <div className="admin-filters">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat}
               type="button"
               className={`admin-chip ${filter === cat ? "admin-chip--active" : ""}`}
               onClick={() => setFilter(cat)}
             >
-              {cat === "drinks & bar" ? <Wine size={13} style={{ marginRight: 4 }} /> : cat === "all" ? null : <UtensilsCrossed size={13} style={{ marginRight: 4 }} />}
+              {cat.toLowerCase() === "drinks & bar" ? <Wine size={13} style={{ marginRight: 4 }} /> : cat === "All" ? null : <UtensilsCrossed size={13} style={{ marginRight: 4 }} />}
               {cat}
             </button>
           ))}
         </div>
 
-        {filter === "all" && barItems.length > 0 && (
+        {filter === "All" && barItems.length > 0 && (
           <>
             <div className="admin-section-divider">
               <Wine size={16} />
@@ -384,7 +506,7 @@ export default function AdminMenu() {
           </>
         )}
 
-        {filter === "all" && foodItems.length > 0 && (
+        {filter === "All" && foodItems.length > 0 && (
           <div className="admin-section-divider">
             <UtensilsCrossed size={16} />
             <span>Food Menu</span>
@@ -419,7 +541,7 @@ export default function AdminMenu() {
       </div>
 
       {/* Add Item Modal */}
-      <AdminModal open={addMode} onClose={() => setAddMode(false)} title="Add Menu Item" size="md">
+      <AdminModal open={addMode} onClose={() => { setAddMode(false); setImageUrl(""); }} title="Add Menu Item" size="md">
         <form className="admin-form" onSubmit={handleCreate}>
           <label>
             <span>Name</span>
@@ -427,13 +549,10 @@ export default function AdminMenu() {
           </label>
           <label>
             <span>Category</span>
-            <select className="admin-input admin-select" name="category" defaultValue="Nepali">
-              <option>Nepali</option>
-              <option>Indian</option>
-              <option>Chinese</option>
-              <option>BBQ & Grill</option>
-              <option>Drinks & Bar</option>
-              <option>Desserts</option>
+            <select className="admin-input admin-select" name="category" defaultValue={categoryOptions[0] || "Nepali"}>
+              {categoryOptions.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </label>
           <label>
@@ -444,20 +563,24 @@ export default function AdminMenu() {
             <span>Description</span>
             <textarea className="admin-input admin-textarea" name="description" rows={3} />
           </label>
+          <label>
+            <span>Image</span>
+            <ImageUploader value={imageUrl} onChange={setImageUrl} folder="menu" />
+          </label>
           <label className="admin-toggle-row" style={{ flexDirection: "row", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>
             <input type="checkbox" name="featured" /> <span>Featured item</span>
           </label>
           <div className="admin-detail-actions">
-            <button type="submit" className="admin-btn-primary" disabled={createMenuItem.isPending}>
+            <button type="submit" className="admin-btn-primary" disabled={createMenuItem.isPending || !imageUrl}>
               {createMenuItem.isPending ? <><Loader2 size={13} className="animate-spin" /> Creating…</> : "Create Item"}
             </button>
-            <button type="button" className="admin-btn-sm" onClick={() => setAddMode(false)}>Cancel</button>
+            <button type="button" className="admin-btn-sm" onClick={() => { setAddMode(false); setImageUrl(""); }}>Cancel</button>
           </div>
         </form>
       </AdminModal>
 
       {/* Edit Modal */}
-      <AdminModal open={!!editItem} onClose={() => setEditItem(null)} title="Edit Menu Item" size="md">
+      <AdminModal open={!!editItem} onClose={closeEdit} title="Edit Menu Item" size="md">
         {editItem && (
           <form className="admin-form" onSubmit={handleSave}>
             <label>
@@ -467,12 +590,9 @@ export default function AdminMenu() {
             <label>
               <span>Category</span>
               <select className="admin-input admin-select" name="category" defaultValue={editItem.category}>
-                <option>Nepali</option>
-                <option>Indian</option>
-                <option>Chinese</option>
-                <option>BBQ & Grill</option>
-                <option>Drinks & Bar</option>
-                <option>Desserts</option>
+                {categoryOptions.map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
               </select>
             </label>
             <label>
@@ -482,6 +602,10 @@ export default function AdminMenu() {
             <label>
               <span>Description</span>
               <textarea className="admin-input admin-textarea" name="description" rows={3} defaultValue={editItem.description || ""} />
+            </label>
+            <label>
+              <span>Image</span>
+              <ImageUploader value={imageUrl} onChange={setImageUrl} folder="menu" />
             </label>
             <div className="admin-toggle-row">
               <Toggle checked={editFeatured} onChange={setEditFeatured} label="Featured" />
@@ -514,6 +638,16 @@ export default function AdminMenu() {
             </div>
           </div>
         )}
+      </AdminModal>
+
+      {/* Manage Categories Modal */}
+      <AdminModal open={catMode} onClose={() => setCatMode(false)} title="Manage Menu Categories" size="md">
+        <CategoryManager
+          categories={categories}
+          onSave={handleSaveCategories}
+          isPending={updateConfig.isPending}
+          onClose={() => setCatMode(false)}
+        />
       </AdminModal>
     </div>
   );

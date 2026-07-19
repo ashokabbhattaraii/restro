@@ -2,14 +2,16 @@
 
 import { Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import GalleryFilter from "@/components/sections/gallery/GalleryFilter";
 import Lightbox from "@/components/shared/Lightbox";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
-import { galleryFilters } from "@/lib/constants";
 import { slugify } from "@/lib/utils";
 import { useGalleryImages } from "@/hooks/useApi";
+import { useConfig } from "@/hooks/useConfig";
 
 
 export default function MasonryGrid() {
@@ -17,6 +19,8 @@ export default function MasonryGrid() {
   const [filter, setFilter] = useState("All");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const { data: data = [] } = useGalleryImages(filter === "All" ? undefined : filter);
+  const { config } = useConfig();
+  const galleryFilters = useMemo(() => config.galleryCategories.length > 0 ? config.galleryCategories : ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"], [config.galleryCategories]);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevFilter = useRef(filter);
 
@@ -30,7 +34,7 @@ export default function MasonryGrid() {
     applyHash();
     window.addEventListener("hashchange", applyHash);
     return () => window.removeEventListener("hashchange", applyHash);
-  }, []);
+  }, [galleryFilters]);
 
   const images = useMemo(() => data, [data]);
 

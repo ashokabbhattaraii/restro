@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import PageHero from "@/components/shared/PageHero";
 import ContactDetails from "@/components/sections/contact/ContactDetails";
 import ContactForm from "@/components/sections/contact/ContactForm";
 import MapEmbed from "@/components/sections/contact/MapEmbed";
-
 
 export default function ContactSection() {
   initGSAP();
@@ -34,7 +35,6 @@ export default function ContactSection() {
         }
       );
 
-      /* Contact row items stagger */
       const rows = detailsRef.current?.querySelectorAll(".contact-row-item") ?? [];
       gsap.set(rows, { opacity: 0, x: -20 });
       ScrollTrigger.create({
@@ -52,8 +52,8 @@ export default function ContactSection() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="Contact Us" text="We'd love to hear from you" />
-      <section className="section" ref={sectionRef}>
+      <PageHero eyebrow="Contact" title="Contact Us" text="We'd love to hear from you. Choose a topic below and we'll get back to you promptly." />
+      <section className="section contact-section" ref={sectionRef}>
         <div className="container contact-layout">
           <div ref={detailsRef} style={{ opacity: 0 }}>
             <ContactDetails />

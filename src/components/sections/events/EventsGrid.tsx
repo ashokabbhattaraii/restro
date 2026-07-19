@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
@@ -9,7 +11,19 @@ import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
+import { Calendar, Clock, MapPin } from "lucide-react";
 
+const EVENT_TYPES: Record<string, { label: string; color: string }> = {
+  "Live Music": { label: "Live Music", color: "#d4a017" },
+  "Happy Hour": { label: "Happy Hour", color: "#c0392b" },
+  "Festival": { label: "Festival", color: "#8e44ad" },
+  "Special": { label: "Special", color: "#16a085" },
+};
+
+function typeColor(type?: string): string {
+  if (!type) return "var(--primary)";
+  return EVENT_TYPES[type]?.color || "var(--primary)";
+}
 
 export default function EventsGrid() {
   initGSAP();
@@ -60,6 +74,21 @@ export default function EventsGrid() {
     return () => ctx.revert();
   }, [events]);
 
+  if (events.length === 0) {
+    return (
+      <section className="section" id="upcoming" ref={sectionRef}>
+        <div className="container" style={{ textAlign: "center", padding: "60px 24px" }}>
+          <SectionHeader
+            title="Upcoming Events"
+            label="Events"
+            text="Live music, cultural evenings, and special occasions — every week at our table."
+          />
+          <p style={{ color: "var(--muted)", marginTop: 32 }}>No upcoming events at this time. Check back soon!</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="section" id="upcoming" ref={sectionRef}>
       <div className="container">
@@ -73,43 +102,47 @@ export default function EventsGrid() {
         </div>
 
         {featured && (
-          <div ref={featuredRef} style={{ opacity: 0, marginBottom: "28px" }}>
-            <Card className="featured-event" style={{ overflow: "hidden" }}>
-              <div style={{
-                position: "relative",
-                minHeight: "380px",
-                borderRadius: "8px",
-                overflow: "hidden",
-                flex: "0 0 42%",
-              }}>
+          <div ref={featuredRef} style={{ opacity: 0, marginBottom: "32px" }}>
+            <Card className="featured-event" style={{ overflow: "hidden", padding: 0, display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1fr)" }}>
+              <div style={{ position: "relative", minHeight: "400px", overflow: "hidden" }}>
                 <Image
                   src={featured.image}
                   alt={featured.title}
                   fill
                   style={{ objectFit: "cover" }}
-                  sizes="(max-width: 768px) 100vw, 42vw"
+                  sizes="(max-width: 768px) 100vw, 55vw"
                 />
                 <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(to right, rgba(9,10,10,0) 60%, rgba(9,10,10,0.3) 100%)",
+                  position: "absolute", inset: 0,
+                  background: "linear-gradient(135deg, rgba(9,10,10,0.6) 0%, transparent 60%)",
                 }} />
               </div>
-
-              <div className="events-featured-body">
-                <Badge>{featured.date} · {featured.time}</Badge>
+              <div style={{ padding: "36px 32px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "12px" }}>
                 {featured.type && (
                   <span style={{
-                    fontSize: "11px", fontWeight: 700, letterSpacing: "0.14em",
-                    textTransform: "uppercase" as const, color: "var(--primary)", marginTop: "4px",
-                    display: "block",
+                    display: "inline-flex", alignSelf: "flex-start",
+                    padding: "4px 12px", borderRadius: "4px",
+                    fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    background: typeColor(featured.type),
+                    color: "#fff",
                   }}>
                     {featured.type}
                   </span>
                 )}
-                <h2>{featured.title}</h2>
-                <p style={{ lineHeight: 1.7, maxWidth: "420px" }}>{featured.description}</p>
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" as const, marginTop: "8px" }}>
+                <h2 style={{ margin: "4px 0 0", fontSize: "clamp(28px, 3.5vw, 42px)", lineHeight: 1.1 }}>{featured.title}</h2>
+                <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "14px", color: "var(--muted)" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                    <Calendar size={14} /> {featured.date}
+                  </span>
+                  {featured.time && (
+                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <Clock size={14} /> {featured.time}
+                    </span>
+                  )}
+                </div>
+                <p style={{ lineHeight: 1.7, color: "var(--body)", margin: "4px 0 8px" }}>{featured.description}</p>
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "4px" }}>
                   <Button href="/reservation">Reserve Your Seat</Button>
                   <Button href="/contact" variant="ghost">Get Notified</Button>
                 </div>
@@ -118,57 +151,58 @@ export default function EventsGrid() {
           </div>
         )}
 
-        <div className="event-grid" ref={gridRef}>
-          {rest.map((event) => (
-            <div key={event._id || event.id} className="event-grid-card" style={{ opacity: 0 }}>
-              <div style={{
-                position: "relative",
-                minHeight: "340px",
-                borderRadius: "12px",
-                overflow: "hidden",
-                border: "1px solid rgba(242,202,80,0.18)",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-              }}>
-                <Image
-                  src={event.image}
-                  alt={event.title}
-                  fill
-                  style={{ objectFit: "cover", zIndex: 0 }}
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                />
-                <div style={{
-                  position: "absolute",
-                  inset: 0,
-                  background: "linear-gradient(to top, rgba(9,10,10,0.98) 0%, rgba(9,10,10,0.5) 55%, transparent 100%)",
-                  zIndex: 1,
-                }} />
-                <div style={{ position: "relative", zIndex: 2, padding: "24px" }}>
-                  <Badge style={{ marginBottom: "8px" }}>{event.date}</Badge>
-                  <h3 style={{
-                    fontFamily: "var(--font-display), Georgia, serif",
-                    fontSize: "20px",
-                    color: "#ffffff",
-                    margin: "0 0 8px",
-                    textShadow: "0 2px 10px rgba(0,0,0,0.9)",
-                  }}>
-                    {event.title}
-                  </h3>
-                  <p style={{
-                    fontSize: "13px", color: "#b8b09f", margin: "0 0 16px",
-                    textShadow: "0 1px 6px rgba(0,0,0,0.9)",
-                  }}>
-                    {event.description}
-                  </p>
-                  <Button href="/reservation" variant="ghost" style={{ fontSize: "12px" }}>
-                    Book This Night
-                  </Button>
-                </div>
+        {rest.length > 0 && (
+          <div className="event-grid" ref={gridRef}>
+            {rest.map((event) => (
+              <div key={event._id || event.id} className="event-grid-card" style={{ opacity: 0 }}>
+                <Card style={{ overflow: "hidden", padding: 0, height: "100%", display: "flex", flexDirection: "column" }}>
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden" }}>
+                    <Image
+                      src={event.image}
+                      alt={event.title}
+                      fill
+                      style={{ objectFit: "cover" }}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: "linear-gradient(to top, rgba(9,10,10,0.85) 0%, transparent 50%)",
+                    }} />
+                    {event.type && (
+                      <span style={{
+                        position: "absolute", top: 12, left: 12, zIndex: 2,
+                        display: "inline-flex", padding: "3px 10px", borderRadius: "4px",
+                        fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        background: typeColor(event.type),
+                        color: "#fff",
+                      }}>
+                        {event.type}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
+                    <h3 style={{ fontSize: "20px", fontWeight: 700, margin: 0, lineHeight: 1.2 }}>{event.title}</h3>
+                    <div style={{ display: "flex", gap: "12px", fontSize: "13px", color: "var(--muted)" }}>
+                      <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                        <Calendar size={13} /> {event.date}
+                      </span>
+                      {event.time && (
+                        <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                          <Clock size={13} /> {event.time}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: "14px", lineHeight: 1.6, color: "var(--body)", margin: 0, flex: 1 }}>{event.description}</p>
+                    <Button href="/reservation" variant="primary" style={{ alignSelf: "flex-start", marginTop: "8px", fontSize: "13px" }}>
+                      Book This Night
+                    </Button>
+                  </div>
+                </Card>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

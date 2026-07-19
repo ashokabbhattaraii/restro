@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import PageHero from "@/components/shared/PageHero";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
@@ -17,7 +19,7 @@ import { reservationSchema } from "@/lib/validations";
 import { useCreateReservation } from "@/hooks/useApi";
 import { useFormDraft } from "@/hooks/useFormDraft";
 import type { RestaurantConfig } from "@/lib/config";
-import { DEFAULT_CONFIG } from "@/lib/config";
+import { useConfig } from "@/hooks/useConfig";
 import { Loader2, Clock } from "lucide-react";
 
 
@@ -74,21 +76,12 @@ type ReservationFormOutput = z.output<typeof reservationSchema>;
 export default function ReservationForm() {
   initGSAP();
   const [occasion, setOccasion] = useState("Birthday");
-  const [config, setConfig] = useState<RestaurantConfig | null>(null);
-  const [configLoading, setConfigLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState("");
+  // Shared, cached config (single request across the app) — no per-component fetch.
+  const { config, loading: configLoading } = useConfig();
   const formCardRef = useRef<HTMLDivElement>(null);
   const hoursCardRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const createReservation = useCreateReservation();
-
-  useEffect(() => {
-    fetch("/api/config")
-      .then((r) => r.json())
-      .then((data) => setConfig(data))
-      .catch(() => setConfig(DEFAULT_CONFIG))
-      .finally(() => setConfigLoading(false));
-  }, []);
 
   const form = useForm<ReservationFormInput, unknown, ReservationFormOutput>({
     resolver: zodResolver(reservationSchema),
@@ -152,10 +145,8 @@ export default function ReservationForm() {
     return () => ctx.revert();
   }, [configLoading]);
 
-  const watchDate = form.watch("date");
-  useEffect(() => {
-    setSelectedDate(watchDate || "");
-  }, [watchDate]);
+  // Derived directly from the watched field — no mirror state/effect needed.
+  const selectedDate = form.watch("date") || "";
 
   const times = config ? generateTimeSlots(config, selectedDate) : [];
   const dayStatus = config && selectedDate ? getDayStatus(selectedDate, config) : "open";

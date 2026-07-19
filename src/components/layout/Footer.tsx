@@ -1,14 +1,39 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Link from "next/link";
 import { Camera, MessageCircle, ThumbsUp } from "lucide-react";
 import { navLinks, restaurant } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
+import type { DayHours } from "@/lib/config";
 
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function formatHours(hours: Record<string, DayHours>): string {
+  const openDays = DAYS.filter((d) => hours[d] && !hours[d].closed);
+  if (openDays.length === 0) return "Closed";
+  const ranges = openDays.map((d) => {
+    const h = hours[d];
+    return `${h.open.slice(0, 5)} – ${h.close.slice(0, 5)}`;
+  });
+  const unique = [...new Set(ranges)];
+  if (unique.length === 1 && openDays.length === 7) return `Daily · ${unique[0]}`;
+  return unique.join(" · ");
+}
+
+function hoursSummary(hours: Record<string, DayHours>): string {
+  const openDays = DAYS.filter((d) => hours[d] && !hours[d].closed);
+  if (openDays.length === 0) return "Closed today";
+  const h = hours[openDays[0]];
+  return `${h.open.slice(0, 5)} – ${h.close.slice(0, 5)}`;
+}
 
 export default function Footer() {
   initGSAP();
+  const { config } = useConfig();
   const footerRef = useRef<HTMLElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -31,7 +56,6 @@ export default function Footer() {
         },
       });
 
-      /* Social icons hover glow */
       const socials = footerRef.current?.querySelectorAll(".social-row a") ?? [];
       socials.forEach((a) => {
         const el = a as HTMLElement;
@@ -51,6 +75,17 @@ export default function Footer() {
     return () => ctx.revert();
   }, []);
 
+  const phoneOne = config.phoneOne;
+  const phoneTwo = config.phoneTwo;
+  const location = config.location;
+
+  const instagramUrl = config.socialInstagram
+    ? `https://www.instagram.com/${config.socialInstagram.replace(/^@/, "")}/`
+    : "https://www.instagram.com/";
+  const facebookUrl = config.socialFacebook
+    ? `https://www.facebook.com/${config.socialFacebook.replace(/\s+/g, "")}/`
+    : "https://www.facebook.com/";
+
   return (
     <footer className="site-footer motif" ref={footerRef}>
       <div className="container footer-grid" ref={gridRef}>
@@ -69,7 +104,6 @@ export default function Footer() {
             India, and China — in the heart of Sulaymaniyah.
           </p>
 
-          {/* Rating strip */}
           <div style={{
             display: "inline-flex",
             alignItems: "center",
@@ -85,13 +119,13 @@ export default function Footer() {
           </div>
 
           <div className="social-row">
-            <a href="https://www.instagram.com/" aria-label="Instagram" rel="noopener noreferrer" target="_blank">
+            <a href={instagramUrl} aria-label="Instagram" rel="noopener noreferrer" target="_blank">
               <Camera size={18} />
             </a>
-            <a href="https://www.facebook.com/" aria-label="Facebook" rel="noopener noreferrer" target="_blank">
+            <a href={facebookUrl} aria-label="Facebook" rel="noopener noreferrer" target="_blank">
               <ThumbsUp size={18} />
             </a>
-            <a href={`https://wa.me/964${restaurant.phoneOne.slice(1)}`} aria-label="WhatsApp" rel="noopener noreferrer" target="_blank">
+            <a href={`https://wa.me/964${phoneOne.slice(1)}`} aria-label="WhatsApp" rel="noopener noreferrer" target="_blank">
               <MessageCircle size={18} />
             </a>
           </div>
@@ -114,14 +148,11 @@ export default function Footer() {
         {/* Hours */}
         <div>
           <h3>Opening Hours</h3>
-          <p style={{ fontSize: "15px", fontWeight: 500, color: "var(--body)", marginBottom: "8px" }}>
-            Mon – Sun
+          <p style={{ fontSize: "13px", fontWeight: 500, color: "var(--muted)", marginBottom: "6px" }}>
+            {formatHours(config.hours)}
           </p>
-          <p style={{ fontSize: "18px", fontWeight: 700, color: "var(--primary)", fontFamily: "var(--font-display), Georgia, serif", marginBottom: "12px" }}>
-            11:00 AM – 11:00 PM
-          </p>
-          <p style={{ fontSize: "13px", lineHeight: 1.6 }}>
-            Open every day of the year.<br />Weekend reservations recommended.
+          <p style={{ fontSize: "13px", lineHeight: 1.6, color: "var(--body)" }}>
+            Weekend reservations recommended.
           </p>
         </div>
 
@@ -133,17 +164,17 @@ export default function Footer() {
               <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--primary)", margin: "0 0 4px" }}>
                 Address
               </p>
-              <p style={{ fontSize: "14px", margin: 0, lineHeight: 1.5 }}>{restaurant.location}</p>
+              <p style={{ fontSize: "14px", margin: 0, lineHeight: 1.5 }}>{location}</p>
             </div>
             <div>
               <p style={{ fontSize: "11px", fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--primary)", margin: "0 0 4px" }}>
                 Phone
               </p>
-              <a href={`tel:${restaurant.phoneOne}`} style={{ display: "block", fontSize: "14px", color: "var(--body)" }}>
-                {restaurant.phoneOne}
+              <a href={`tel:${phoneOne}`} style={{ display: "block", fontSize: "14px", color: "var(--body)" }}>
+                {phoneOne}
               </a>
-              <a href={`tel:${restaurant.phoneTwo}`} style={{ display: "block", fontSize: "14px", color: "var(--body)" }}>
-                {restaurant.phoneTwo}
+              <a href={`tel:${phoneTwo}`} style={{ display: "block", fontSize: "14px", color: "var(--body)" }}>
+                {phoneTwo}
               </a>
             </div>
             <div>
@@ -156,7 +187,6 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Bottom bar */}
       <div className="container footer-bottom" ref={bottomRef}>
         © 2026 {restaurant.name} · All Rights Reserved ·{" "}
         <Link href="/admin" style={{ color: "var(--muted)", opacity: 0.5, fontSize: "11px" }}>

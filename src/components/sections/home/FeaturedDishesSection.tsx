@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
@@ -100,7 +102,7 @@ export default function FeaturedDishesSection() {
                 <FoodImage src={dish.image} alt={dish.name} />
                 <div className="dish-body">
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "8px" }}>
-                    <h3 style={{ margin: 0, flex: 1, minWidth: 0, overflowWrap: "anywhere" }}>{dish.name}</h3>
+                    <h3 style={{ margin: 0, flex: 1, minWidth: 0, overflowWrap: "break-word" }}>{dish.name}</h3>
                     <span style={{
                       fontFamily: "var(--font-display), Georgia, serif",
                       fontSize: "18px",

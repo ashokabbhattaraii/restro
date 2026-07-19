@@ -1,52 +1,74 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import FoodImage from "@/components/shared/FoodImage";
+import DataTable from "@/components/admin/DataTable";
 import AdminModal from "@/components/admin/AdminModal";
 import AdminPagination from "@/components/admin/AdminPagination";
 import { useEventsAdmin, useCreateEvent, useUpdateEvent, useDeleteEvent } from "@/hooks/useApi";
-import { Calendar, Pencil, Trash2, Loader2, Search, ArrowUpDown, Plus } from "lucide-react";
+import { Calendar, Pencil, Trash2, Loader2, Search, ArrowUpDown, Plus, Eye, EyeOff } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import toast from "react-hot-toast";
 import type { EventItem } from "@/types";
+import { fetcher } from "@/lib/api/client";
+
+const STATUS_OPTIONS = [
+  { value: "all", label: "All Status" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
+] as const;
 
 export default function AdminEvents() {
-  const [addMode, setAddMode] = useState(false);
-  const [editEvent, setEditEvent] = useState<EventItem | null>(null);
-  const [deleteEventItem, setDeleteEventItem] = useState<EventItem | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(8);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [selectedRow, setSelectedRow] = useState<EventItem | null>(null);
+  const [modalMode, setModalMode] = useState<"view" | "edit" | "delete" | "add" | null>(null);
+  const [configEventTypes, setConfigEventTypes] = useState<string[]>([]);
+
   const { data: events = [] } = useEventsAdmin();
   const createEvent = useCreateEvent();
   const updateEvent = useUpdateEvent();
   const deleteEvent = useDeleteEvent();
-  const isPending = updateEvent.isPending || deleteEvent.isPending;
+  const isPending = updateEvent.isPending || deleteEvent.isPending || createEvent.isPending;
+
+  useEffect(() => {
+    fetcher<{ eventTypes: string[] }>("/api/config")
+      .then((cfg) => { if (cfg.eventTypes) setConfigEventTypes(cfg.eventTypes); })
+      .catch(() => {});
+  }, []);
 
   const eventTypes = useMemo(() => {
     const types = new Set(events.map((e) => e.type).filter(Boolean));
     return ["all", ...Array.from(types)];
   }, [events]);
 
+  const activeCount = useMemo(() => events.filter((e) => e.active !== false).length, [events]);
+  const inactiveCount = events.length - activeCount;
+
   const debouncedSearch = useDebouncedCallback(
-    useCallback((val: string) => {
-      setSearch(val);
+    useCallback((value: string) => {
+      setSearch(value);
       setCurrentPage(1);
     }, []),
-    250
+    300
   );
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    let result = events.filter((e) => {
+    const result = events.filter((e) => {
       const matchSearch = !search ||
         e.title.toLowerCase().includes(q) ||
         e.description.toLowerCase().includes(q) ||
         (e.type || "").toLowerCase().includes(q);
       const matchType = typeFilter === "all" || e.type === typeFilter;
-      return matchSearch && matchType;
+      const matchStatus = statusFilter === "all" ||
+        (statusFilter === "active" && e.active !== false) ||
+        (statusFilter === "inactive" && e.active === false);
+      return matchSearch && matchType && matchStatus;
     });
     result.sort((a, b) => {
       const dA = new Date(a.date).getTime();
@@ -54,34 +76,45 @@ export default function AdminEvents() {
       return sortOrder === "newest" ? dB - dA : dA - dB;
     });
     return result;
-  }, [events, search, typeFilter, sortOrder]);
+  }, [events, search, typeFilter, statusFilter, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
-  const paginatedEvents = useMemo(
+  const paginatedRows = useMemo(
     () => filtered.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage),
     [filtered, currentPage, rowsPerPage]
   );
 
+  const openModal = useCallback((row: EventItem | null, mode: typeof modalMode) => {
+    setSelectedRow(row);
+    setModalMode(mode);
+  }, []);
+
+  const closeModal = useCallback(() => {
+    setSelectedRow(null);
+    setModalMode(null);
+  }, []);
+
   const handleSave = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!editEvent) return;
+    if (!selectedRow) return;
     const form = e.currentTarget;
     try {
       await updateEvent.mutateAsync({
-        id: (editEvent._id || editEvent.id)!,
+        id: (selectedRow._id || selectedRow.id)!,
         title: (form.elements.namedItem("title") as HTMLInputElement).value,
         description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
         date: (form.elements.namedItem("date") as HTMLInputElement).value,
         time: (form.elements.namedItem("time") as HTMLInputElement).value,
-        type: (form.elements.namedItem("type") as HTMLInputElement).value,
+        type: (form.elements.namedItem("type") as HTMLSelectElement).value,
+        active: selectedRow.active !== false,
         image: (form.elements.namedItem("image") as HTMLInputElement).value,
       });
       toast.success("Event updated");
-      setEditEvent(null);
+      closeModal();
     } catch {
       toast.error("Failed to update event");
     }
-  }, [editEvent, updateEvent]);
+  }, [selectedRow, updateEvent, closeModal]);
 
   const handleCreate = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -92,35 +125,57 @@ export default function AdminEvents() {
         description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
         date: (form.elements.namedItem("date") as HTMLInputElement).value,
         time: (form.elements.namedItem("time") as HTMLInputElement).value,
-        type: (form.elements.namedItem("type") as HTMLInputElement).value,
+        type: (form.elements.namedItem("type") as HTMLSelectElement).value,
+        active: true,
         image: (form.elements.namedItem("image") as HTMLInputElement).value,
       });
       toast.success("Event created");
-      setAddMode(false);
+      closeModal();
     } catch {
       toast.error("Failed to create event");
     }
-  }, [createEvent]);
+  }, [createEvent, closeModal]);
 
-  const handleDeleteConfirm = useCallback(async () => {
-    if (!deleteEventItem) return;
+  const handleDelete = useCallback(async () => {
+    if (!selectedRow) return;
     try {
-      await deleteEvent.mutateAsync((deleteEventItem._id || deleteEventItem.id)!);
+      await deleteEvent.mutateAsync((selectedRow._id || selectedRow.id)!);
       toast.success("Event deleted");
-      setDeleteEventItem(null);
+      closeModal();
     } catch {
       toast.error("Failed to delete event");
     }
-  }, [deleteEventItem, deleteEvent]);
+  }, [selectedRow, deleteEvent, closeModal]);
+
+  const toggleActive = useCallback(async (event: EventItem) => {
+    const id = event._id || event.id;
+    if (!id) return;
+    try {
+      await updateEvent.mutateAsync({ id, active: event.active === false });
+      toast.success(event.active === false ? "Event activated" : "Event deactivated");
+    } catch {
+      toast.error("Failed to update event");
+    }
+  }, [updateEvent]);
 
   return (
     <div className="admin-page-content">
       <div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Events</h2>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <div className="admin-panel-header-actions">
             <span className="admin-panel-badge">{events.length} events</span>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setAddMode(true)}>
+            {activeCount > 0 && (
+              <span className="admin-panel-badge" style={{ background: "#059669", color: "#fff" }}>
+                {activeCount} active
+              </span>
+            )}
+            {inactiveCount > 0 && (
+              <span className="admin-panel-badge" style={{ background: "#e74c3c", color: "#fff" }}>
+                {inactiveCount} inactive
+              </span>
+            )}
+            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => openModal(null, "add")}>
               <Plus size={13} /> Add Event
             </button>
           </div>
@@ -143,8 +198,17 @@ export default function AdminEvents() {
             onChange={(e) => { setTypeFilter(e.target.value); setCurrentPage(1); }}
           >
             <option value="all">All Types</option>
-            {eventTypes.map((t) => (
+            {eventTypes.filter((t) => t !== "all").map((t) => (
               <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+          <select
+            className="admin-input admin-select"
+            value={statusFilter}
+            onChange={(e) => { setStatusFilter(e.target.value as typeof statusFilter); setCurrentPage(1); }}
+          >
+            {STATUS_OPTIONS.map(({ value, label }) => (
+              <option key={value} value={value}>{label}</option>
             ))}
           </select>
           <button
@@ -156,39 +220,56 @@ export default function AdminEvents() {
           </button>
         </div>
 
-        <div className="admin-event-grid">
-          {paginatedEvents.length === 0 ? (
-            <p className="admin-empty">No events match your search.</p>
-          ) : (
-            paginatedEvents.map((event) => (
-              <div
-                className="admin-event-card"
-                key={event._id || event.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setEditEvent(event)}
-                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setEditEvent(event); }}
-              >
-                <div className="admin-event-card-img">
-                  <FoodImage src={event.image} alt={event.title} />
-                </div>
-                <div className="admin-event-card-body">
-                  <span className="admin-badge">{event.type || "General"}</span>
-                  <h3>{event.title}</h3>
-                  <p><Calendar size={12} /> {event.date}{event.time ? ` · ${event.time}` : ""}</p>
-                  <div className="admin-event-card-actions">
-                    <button type="button" className="admin-btn-sm" onClick={(e) => { e.stopPropagation(); setEditEvent(event); }} disabled={isPending}>
-                      <Pencil size={12} /> Edit
-                    </button>
-                    <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={(e) => { e.stopPropagation(); setDeleteEventItem(event); }} disabled={isPending}>
-                      <Trash2 size={12} /> Delete
-                    </button>
+        <DataTable<EventItem>
+          columns={[
+            {
+              key: "title",
+              label: "Event",
+              render: (_value, row) => (
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ position: "relative", width: 48, height: 48, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+                    <FoodImage src={row.image} alt={row.title} />
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, color: "var(--a-text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {row.title}
+                    </div>
+                    <div style={{ fontSize: 12, color: "var(--a-text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {row.type || "General"}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
-          )}
-        </div>
+              ),
+            },
+            {
+              key: "type",
+              label: "Type",
+              render: (value) => <span className="admin-badge">{String(value || "General")}</span>,
+            },
+            {
+              key: "date",
+              label: "Date",
+              render: (value, row) => (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <Calendar size={12} /> {String(value)}{row.time ? ` · ${row.time}` : ""}
+                </span>
+              ),
+            },
+            {
+              key: "active",
+              label: "Status",
+              render: (value) => (
+                <span className={`admin-badge ${value !== false ? "badge-success" : "badge-danger"}`}>
+                  {value !== false ? "Active" : "Inactive"}
+                </span>
+              ),
+            },
+          ]}
+          data={paginatedRows}
+          onView={(row) => openModal(row, "view")}
+          onEdit={(row) => openModal(row, "edit")}
+          onDelete={(row) => openModal(row, "delete")}
+        />
 
         <AdminPagination
           currentPage={currentPage}
@@ -200,8 +281,62 @@ export default function AdminEvents() {
         />
       </div>
 
+      {/* View Modal */}
+      <AdminModal open={modalMode === "view" && !!selectedRow} onClose={closeModal} title="Event Details" size="lg">
+        {selectedRow && (
+          <div className="admin-detail-grid">
+            <div className="admin-detail-item admin-detail-item--full" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+              <div style={{ position: "relative", width: 120, height: 80, borderRadius: 8, overflow: "hidden", flexShrink: 0 }}>
+                <FoodImage src={selectedRow.image} alt={selectedRow.title} />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>{selectedRow.title}</p>
+                <p style={{ margin: 0, color: "var(--a-text-3)" }}>{selectedRow.type || "General"}</p>
+              </div>
+            </div>
+            <div className="admin-detail-item">
+              <label>Date</label>
+              <p><Calendar size={13} /> {selectedRow.date}{selectedRow.time ? ` · ${selectedRow.time}` : ""}</p>
+            </div>
+            <div className="admin-detail-item">
+              <label>Status</label>
+              <p>
+                <span className={`admin-badge ${selectedRow.active !== false ? "badge-success" : "badge-danger"}`}>
+                  {selectedRow.active !== false ? "Active" : "Inactive"}
+                </span>
+              </p>
+            </div>
+            <div className="admin-detail-item admin-detail-item--full">
+              <label>Description</label>
+              <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{selectedRow.description}</p>
+            </div>
+            <div className="admin-detail-actions">
+              <button type="button" className="admin-btn-primary" onClick={() => setModalMode("edit")}>
+                <Pencil size={13} /> Edit Event
+              </button>
+              <button
+                type="button"
+                className="admin-btn-sm"
+                onClick={() => toggleActive(selectedRow)}
+                disabled={updateEvent.isPending}
+              >
+                {selectedRow.active !== false ? <><EyeOff size={13} /> Deactivate</> : <><Eye size={13} /> Activate</>}
+              </button>
+              <button
+                type="button"
+                className="admin-btn-sm admin-btn-sm--danger"
+                onClick={() => setModalMode("delete")}
+                disabled={isPending}
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            </div>
+          </div>
+        )}
+      </AdminModal>
+
       {/* Add Event Modal */}
-      <AdminModal open={addMode} onClose={() => setAddMode(false)} title="Add Event" size="md">
+      <AdminModal open={modalMode === "add"} onClose={closeModal} title="Add Event" size="md">
         <form className="admin-form" onSubmit={handleCreate}>
           <label>
             <span>Title</span>
@@ -209,7 +344,7 @@ export default function AdminEvents() {
           </label>
           <label>
             <span>Description</span>
-            <textarea className="admin-input admin-textarea" name="description" rows={3} />
+            <textarea className="admin-input admin-textarea" name="description" rows={3} required />
           </label>
           <div className="admin-form-row">
             <label>
@@ -223,69 +358,79 @@ export default function AdminEvents() {
           </div>
           <label>
             <span>Type</span>
-            <input className="admin-input" name="type" placeholder="e.g. Live Music, Festival" />
+            <select className="admin-input admin-select" name="type">
+              <option value="">Select type</option>
+              {configEventTypes.length > 0 && configEventTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
           </label>
           <label>
             <span>Image URL</span>
-            <input className="admin-input" name="image" required />
+            <input className="admin-input" name="image" required placeholder="https://..." />
           </label>
           <div className="admin-detail-actions">
             <button type="submit" className="admin-btn-primary" disabled={createEvent.isPending}>
               {createEvent.isPending ? <><Loader2 size={13} className="animate-spin" /> Creating…</> : "Create Event"}
             </button>
-            <button type="button" className="admin-btn-sm" onClick={() => setAddMode(false)}>Cancel</button>
+            <button type="button" className="admin-btn-sm" onClick={closeModal}>Cancel</button>
           </div>
         </form>
       </AdminModal>
 
-      <AdminModal open={!!editEvent} onClose={() => setEditEvent(null)} title="Edit Event" size="md">
-        {editEvent && (
+      {/* Edit Event Modal */}
+      <AdminModal open={modalMode === "edit" && !!selectedRow} onClose={closeModal} title="Edit Event" size="md">
+        {selectedRow && (
           <form className="admin-form" onSubmit={handleSave}>
             <label>
               <span>Title</span>
-              <input className="admin-input" name="title" defaultValue={editEvent.title} required />
+              <input className="admin-input" name="title" defaultValue={selectedRow.title} required />
             </label>
             <label>
               <span>Description</span>
-              <textarea className="admin-input admin-textarea" name="description" rows={3} defaultValue={editEvent.description} />
+              <textarea className="admin-input admin-textarea" name="description" rows={3} defaultValue={selectedRow.description} required />
             </label>
-            <label>
-              <span>Date</span>
-              <input className="admin-input" name="date" defaultValue={editEvent.date} required />
-            </label>
-            <label>
-              <span>Time</span>
-              <input className="admin-input" name="time" defaultValue={editEvent.time || ""} />
-            </label>
+            <div className="admin-form-row">
+              <label>
+                <span>Date</span>
+                <input className="admin-input" name="date" defaultValue={selectedRow.date} required />
+              </label>
+              <label>
+                <span>Time</span>
+                <input className="admin-input" name="time" defaultValue={selectedRow.time || ""} type="time" />
+              </label>
+            </div>
             <label>
               <span>Type</span>
-              <input className="admin-input" name="type" defaultValue={editEvent.type || ""} />
+              <select className="admin-input admin-select" name="type" defaultValue={selectedRow.type || ""}>
+                <option value="">Select type</option>
+                {configEventTypes.length > 0 && configEventTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
             </label>
             <label>
               <span>Image URL</span>
-              <input className="admin-input" name="image" defaultValue={editEvent.image} required />
+              <input className="admin-input" name="image" defaultValue={selectedRow.image} required />
             </label>
             <div className="admin-detail-actions">
               <button type="submit" className="admin-btn-primary" disabled={updateEvent.isPending}>
                 {updateEvent.isPending ? <><Loader2 size={13} className="animate-spin" /> Saving…</> : "Save Changes"}
               </button>
-              <button type="button" className="admin-btn-sm" onClick={() => setEditEvent(null)} disabled={isPending}>Cancel</button>
+              <button type="button" className="admin-btn-sm" onClick={closeModal} disabled={isPending}>Cancel</button>
             </div>
           </form>
         )}
       </AdminModal>
 
-      <AdminModal open={!!deleteEventItem} onClose={() => setDeleteEventItem(null)} title="Delete Event" size="sm">
-        {deleteEventItem && (
+      {/* Delete Confirmation Modal */}
+      <AdminModal open={modalMode === "delete" && !!selectedRow} onClose={closeModal} title="Delete Event" size="sm">
+        {selectedRow && (
           <div className="admin-delete-confirm">
             <div className="admin-delete-confirm-icon"><Trash2 size={20} /></div>
-            <p>Delete event <strong>{deleteEventItem.title}</strong>?</p>
+            <p>Delete event <strong>{selectedRow.title}</strong>?</p>
             <p className="admin-delete-confirm-hint">This action cannot be undone.</p>
             <div className="admin-detail-actions">
-              <button type="button" className="admin-btn-sm admin-btn-sm--danger" disabled={deleteEvent.isPending} onClick={handleDeleteConfirm}>
+              <button type="button" className="admin-btn-sm admin-btn-sm--danger" disabled={deleteEvent.isPending} onClick={handleDelete}>
                 {deleteEvent.isPending ? "Deleting…" : "Yes, Delete"}
               </button>
-              <button type="button" className="admin-btn-sm" onClick={() => setDeleteEventItem(null)}>Cancel</button>
+              <button type="button" className="admin-btn-sm" onClick={closeModal}>Cancel</button>
             </div>
           </div>
         )}

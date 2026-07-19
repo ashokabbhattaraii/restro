@@ -1,16 +1,19 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { gsap, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { initGSAP } from "@/lib/gsap";
 import { ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navLinks, restaurant } from "@/lib/constants";
 import Button from "@/components/ui/Button";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import { useConfig } from "@/hooks/useConfig";
 
 export default function Navbar() {
   initGSAP();
+  const { config } = useConfig();
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -275,7 +278,7 @@ export default function Navbar() {
             </Button>
             <div className="mobile-nav-info">
               <p>{restaurant.cuisine}</p>
-              <p className="phone-numbers">{restaurant.phoneOne} · {restaurant.phoneTwo}</p>
+              <p className="phone-numbers">{config.phoneOne} · {config.phoneTwo}</p>
             </div>
           </div>
         </aside>

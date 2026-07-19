@@ -67,18 +67,26 @@ export type Message = {
   email?: string;
   subject: string;
   message: string;
+  contactType: "feedback" | "enquiry" | "other";
+  rating?: number; // 1-5, only for feedback
+  verified: boolean; // admin approved for public display
   read: boolean;
   replied?: boolean;
+  reply?: string;
+  replyAt?: string;
   createdAt: string;
 };
 
 export type AuditAction =
   | "create" | "update" | "delete"
   | "import" | "bulk-update"
-  | "login" | "view";
+  | "login" | "view"
+  | "verify" | "unverify"
+  | "reply" | "export";
 
 export type AuditResource =
-  | "menu" | "reservation" | "event" | "staff" | "gallery" | "message";
+  | "menu" | "reservation" | "event" | "staff" | "gallery" | "message"
+  | "offer" | "config" | "auth";
 
 export type AuditLogEntry = {
   id: string;
@@ -87,6 +95,31 @@ export type AuditLogEntry = {
   resourceId?: string;
   summary: string;
   details?: Record<string, unknown>;
+  before?: Record<string, unknown>;
+  after?: Record<string, unknown>;
   timestamp: string;
   admin: string;
+  ip?: string;
+  userAgent?: string;
+};
+
+export type OfferItem = {
+  id: string;
+  pct: string;
+  unit: string;
+  title: string;
+  description: string;
+  validity: string;
+  cta: string;
+  active: boolean;
+  sortOrder: number;
+};
+
+export type VerifiedFeedback = {
+  id: string;
+  name: string;
+  location?: string;
+  quote: string;
+  rating: number;
+  createdAt: string;
 };

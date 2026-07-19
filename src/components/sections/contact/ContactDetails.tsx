@@ -1,21 +1,45 @@
+"use client";
+
 import { Camera, Globe, MapPin, MessageCircle, Phone } from "lucide-react";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import { restaurant } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
 
-const rows = [
-  { label: "Address", value: restaurant.location, icon: MapPin, href: undefined },
-  { label: "Phone 1", value: restaurant.phoneOne, icon: Phone, href: `tel:${restaurant.phoneOne}` },
-  { label: "Phone 2", value: restaurant.phoneTwo, icon: Phone, href: `tel:${restaurant.phoneTwo}` },
-  { label: "WhatsApp", value: "Tap to chat", icon: MessageCircle, href: `https://wa.me/964${restaurant.phoneOne.slice(1)}` },
-  { label: "Instagram", value: "@nepali.restaurant.bar", icon: Camera, href: "#" },
-  { label: "Facebook", value: "Nepali Restaurant & Bar", icon: Globe, href: "#" },
-];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function hoursDisplay(hours: Record<string, { open: string; close: string; closed: boolean }>) {
+  const lines = DAYS.map((day) => {
+    const h = hours[day];
+    if (!h || h.closed) return { day, text: "Closed" };
+    return { day, text: `${h.open.slice(0, 5)} – ${h.close.slice(0, 5)}` };
+  });
+  return lines;
+}
 
 export default function ContactDetails() {
+  const { config } = useConfig();
+  const phoneOne = config.phoneOne;
+  const phoneTwo = config.phoneTwo;
+  const location = config.location;
+
+  const instagramUrl = config.socialInstagram
+    ? `https://www.instagram.com/${config.socialInstagram.replace(/^@/, "")}/`
+    : "#";
+  const facebookUrl = config.socialFacebook
+    ? `https://www.facebook.com/${config.socialFacebook.replace(/\s+/g, "")}/`
+    : "#";
+
+  const rows = [
+    { label: "Address", value: location, icon: MapPin, href: undefined },
+    { label: "Phone 1", value: phoneOne, icon: Phone, href: `tel:${phoneOne}` },
+    { label: "Phone 2", value: phoneTwo, icon: Phone, href: `tel:${phoneTwo}` },
+    { label: "WhatsApp", value: "Tap to chat", icon: MessageCircle, href: `https://wa.me/964${phoneOne.slice(1)}` },
+    { label: "Instagram", value: config.socialInstagram || "Instagram", icon: Camera, href: instagramUrl },
+    { label: "Facebook", value: config.socialFacebook || "Facebook", icon: Globe, href: facebookUrl },
+  ];
+
   return (
     <Card className="contact-card" style={{ height: "100%" }}>
-      {/* Header */}
       <div style={{ marginBottom: "28px" }}>
         <div style={{
           width: "40px", height: "3px",
@@ -28,7 +52,6 @@ export default function ContactDetails() {
         </p>
       </div>
 
-      {/* Contact rows */}
       <div className="contact-info-card">
         {rows.map((row) => {
           const Icon = row.icon;
@@ -52,14 +75,12 @@ export default function ContactDetails() {
         })}
       </div>
 
-      {/* WhatsApp CTA */}
       <div style={{ marginTop: "28px" }}>
-        <Button href={`https://wa.me/964${restaurant.phoneOne.slice(1)}`} style={{ width: "100%" }}>
+        <Button href={`https://wa.me/964${phoneOne.slice(1)}`} style={{ width: "100%" }}>
           💬 Chat on WhatsApp
         </Button>
       </div>
 
-      {/* Hours quick glance */}
       <div style={{
         marginTop: "24px",
         padding: "16px",
@@ -68,11 +89,18 @@ export default function ContactDetails() {
         background: "rgba(242,202,80,0.04)",
       }}>
         <p style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--primary)", margin: "0 0 6px" }}>
-          Open Daily
+          Opening Hours
         </p>
-        <p style={{ fontSize: "15px", fontWeight: 600, color: "var(--body)", margin: 0 }}>
-          {restaurant.hours}
-        </p>
+        {DAYS.map((day) => {
+          const h = config.hours[day];
+          if (!h || h.closed) return null;
+          return (
+            <p key={day} style={{ fontSize: "14px", margin: "2px 0", display: "flex", justifyContent: "space-between" }}>
+              <span style={{ color: "var(--muted)" }}>{day}</span>
+              <span style={{ fontWeight: 600 }}>{h.open.slice(0, 5)} – {h.close.slice(0, 5)}</span>
+            </p>
+          );
+        })}
       </div>
     </Card>
   );

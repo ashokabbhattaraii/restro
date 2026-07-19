@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
 import SectionLabel from "@/components/ui/SectionLabel";
 import CounterUp from "@/components/shared/CounterUp";
 import { images, restaurant } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
 
 
 const lines = ["A Taste of", "the Himalayas"];
@@ -26,6 +29,8 @@ const SLIDE_IMAGES = [
 
 export default function HeroSection() {
   initGSAP();
+  const { config } = useConfig();
+  const locationLabel = config.location.split(",").map((s) => s.trim()).join(", ").toUpperCase() || "SULAYMANIYAH, IRAQ";
   const labelRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<(HTMLSpanElement | null)[]>([]);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -176,12 +181,14 @@ export default function HeroSection() {
 
       <div className="container hero-content">
         <div ref={labelRef} style={{ opacity: 0 }} className="flex flex-col items-center gap-6 select-none mb-2">
-          <img
-            src="/logo.png"
-            alt={`${restaurant.name} Logo`}
-            className="h-28 w-auto filter drop-shadow-[0_0_18px_rgba(242,202,80,0.45)] animate-pulse-slow rounded-full object-contain mb-2"
-          />
-          <SectionLabel>EST. {restaurant.established} · SULAYMANIYAH, IRAQ</SectionLabel>
+          <span className="hero-logo-badge animate-pulse-slow mb-2">
+            <img
+              src="/logo.png"
+              alt={`${restaurant.name} Logo`}
+              className="h-24 w-auto object-contain"
+            />
+          </span>
+          <SectionLabel>EST. {restaurant.established} · {locationLabel}</SectionLabel>
         </div>
 
         <h1 style={{ perspective: "800px" }}>

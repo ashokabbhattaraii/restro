@@ -2,10 +2,13 @@
 
 import { useState, useMemo, useCallback } from "react";
 import AdminModal from "@/components/admin/AdminModal";
-import { Trash2, UploadCloud, GripVertical, Search, Plus, Loader2 } from "lucide-react";
+import { Trash2, Search, Plus, Loader2, GripVertical, X, Settings2 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 import AdminPagination from "@/components/admin/AdminPagination";
+import ImageUploader from "@/components/admin/ImageUploader";
+import { useConfig } from "@/hooks/useConfig";
+import { useUpdateConfig } from "@/hooks/useUpdateConfig";
 import { useGalleryImages, useCreateGalleryImage, useDeleteGalleryImage } from "@/hooks/useApi";
 import toast from "react-hot-toast";
 import type { GalleryImage } from "@/types";
@@ -23,8 +26,6 @@ import {
   rectSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-const CATEGORIES = ["all", "Food", "Dining Area", "Bar", "Events", "Exterior"];
 
 function SortableImage({
   item,
@@ -73,16 +74,106 @@ function SortableImage({
   );
 }
 
+function CategoryManager({
+  categories,
+  onSave,
+  isPending,
+  onClose,
+}: {
+  categories: string[];
+  onSave: (cats: string[]) => void;
+  isPending: boolean;
+  onClose: () => void;
+}) {
+  const [newCat, setNewCat] = useState("");
+  const [localCats, setLocalCats] = useState(categories.filter((c) => c.toLowerCase() !== "all"));
+
+  const add = () => {
+    const trimmed = newCat.trim();
+    if (!trimmed) return;
+    if (localCats.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      toast.error("Category already exists");
+      return;
+    }
+    setLocalCats((prev) => [...prev, trimmed]);
+    setNewCat("");
+  };
+
+  const remove = (idx: number) => {
+    setLocalCats((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input
+          className="admin-input"
+          type="text"
+          placeholder="New category name…"
+          value={newCat}
+          onChange={(e) => setNewCat(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); add(); } }}
+          style={{ flex: 1 }}
+        />
+        <button type="button" className="admin-btn-primary" onClick={add}>
+          <Plus size={13} /> Add
+        </button>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 20 }}>
+        {localCats.length === 0 && <p className="admin-empty" style={{ padding: 16 }}>No categories yet.</p>}
+        {localCats.map((cat, idx) => (
+          <div
+            key={cat}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "8px 12px",
+              background: "var(--a-gold-dim)",
+              borderRadius: 6,
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>{cat}</span>
+            <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={() => remove(idx)}>
+              <X size={12} /> Remove
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="admin-detail-actions">
+        <button
+          type="button"
+          className="admin-btn-primary"
+          onClick={() => onSave(["All", ...localCats])}
+          disabled={isPending}
+        >
+          {isPending ? <><Loader2 size={13} className="animate-spin" /> Saving…</> : "Save Categories"}
+        </button>
+        <button type="button" className="admin-btn-sm" onClick={onClose}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminGallery() {
   const { data: galleryImages = [] } = useGalleryImages();
   const createImage = useCreateGalleryImage();
   const deleteImage = useDeleteGalleryImage();
+  const { config } = useConfig();
+  const updateConfig = useUpdateConfig();
+
+  const categories = useMemo(() => config.galleryCategories, [config.galleryCategories]);
+
   const [addMode, setAddMode] = useState(false);
+  const [catMode, setCatMode] = useState(false);
   const [items, setItems] = useState<typeof galleryImages>([]);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [imageUrl, setImageUrl] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -104,7 +195,7 @@ export default function AdminGallery() {
       const matchSearch = !search ||
         img.title.toLowerCase().includes(q) ||
         img.category.toLowerCase().includes(q);
-      const matchCat = categoryFilter === "all" || img.category === categoryFilter;
+      const matchCat = categoryFilter === "All" || img.category === categoryFilter;
       return matchSearch && matchCat;
     });
   }, [displayItems, search, categoryFilter]);
@@ -133,14 +224,25 @@ export default function AdminGallery() {
       await createImage.mutateAsync({
         title: (form.elements.namedItem("title") as HTMLInputElement).value,
         category: (form.elements.namedItem("category") as HTMLSelectElement).value as GalleryImage["category"],
-        image: (form.elements.namedItem("image") as HTMLInputElement).value,
+        image: imageUrl,
       });
       toast.success("Image added to gallery");
       setAddMode(false);
+      setImageUrl("");
     } catch {
       toast.error("Failed to add image");
     }
-  }, [createImage]);
+  }, [createImage, imageUrl]);
+
+  const handleSaveCategories = useCallback(async (cats: string[]) => {
+    try {
+      await updateConfig.mutateAsync({ galleryCategories: cats });
+      toast.success("Categories updated");
+      setCatMode(false);
+    } catch {
+      toast.error("Failed to update categories");
+    }
+  }, [updateConfig]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -165,7 +267,15 @@ export default function AdminGallery() {
       <div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Gallery</h2>
-          <span className="admin-panel-badge">{galleryImages.length} images</span>
+          <div className="admin-panel-header-actions">
+            <span className="admin-panel-badge">{galleryImages.length} images</span>
+            <button type="button" className="admin-btn-sm" onClick={() => setCatMode(true)}>
+              <Settings2 size={13} /> Categories
+            </button>
+            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setAddMode(true)}>
+              <Plus size={13} /> Add Image
+            </button>
+          </div>
         </div>
 
         <div className="admin-filters">
@@ -180,22 +290,18 @@ export default function AdminGallery() {
             />
           </div>
           <div className="admin-filters-scroll">
-            {CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 type="button"
                 className={`admin-chip ${categoryFilter === cat ? "admin-chip--active" : ""}`}
                 onClick={() => { setCategoryFilter(cat); setCurrentPage(1); }}
               >
-                {cat === "all" ? "All" : cat}
+                {cat === "All" ? "All" : cat}
               </button>
             ))}
           </div>
         </div>
-
-        <button type="button" className="admin-btn-primary" style={{ marginBottom: 16, alignSelf: "flex-start" }} onClick={() => setAddMode(true)}>
-          <Plus size={14} /> Add Image
-        </button>
 
         {paginatedItems.length === 0 ? (
           <p className="admin-empty">No images match your search.</p>
@@ -233,7 +339,7 @@ export default function AdminGallery() {
       </div>
 
       {/* Add Image Modal */}
-      <AdminModal open={addMode} onClose={() => setAddMode(false)} title="Add Gallery Image" size="md">
+      <AdminModal open={addMode} onClose={() => { setAddMode(false); setImageUrl(""); }} title="Add Gallery Image" size="md">
         <form className="admin-form" onSubmit={handleCreateImage}>
           <label>
             <span>Title</span>
@@ -241,25 +347,33 @@ export default function AdminGallery() {
           </label>
           <label>
             <span>Category</span>
-            <select className="admin-input admin-select" name="category" defaultValue="Food">
-              <option>Food</option>
-              <option>Dining Area</option>
-              <option>Bar</option>
-              <option>Events</option>
-              <option>Exterior</option>
+            <select className="admin-input admin-select" name="category" defaultValue={categories[1] || "Food"}>
+              {categories.filter((c) => c !== "All").map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </label>
           <label>
-            <span>Image URL</span>
-            <input className="admin-input" name="image" placeholder="https://…" required />
+            <span>Image</span>
+            <ImageUploader value={imageUrl} onChange={setImageUrl} folder="gallery" />
           </label>
           <div className="admin-detail-actions">
-            <button type="submit" className="admin-btn-primary" disabled={createImage.isPending}>
+            <button type="submit" className="admin-btn-primary" disabled={createImage.isPending || !imageUrl}>
               {createImage.isPending ? <><Loader2 size={13} className="animate-spin" /> Adding…</> : "Add to Gallery"}
             </button>
-            <button type="button" className="admin-btn-sm" onClick={() => setAddMode(false)}>Cancel</button>
+            <button type="button" className="admin-btn-sm" onClick={() => { setAddMode(false); setImageUrl(""); }}>Cancel</button>
           </div>
         </form>
+      </AdminModal>
+
+      {/* Manage Categories Modal */}
+      <AdminModal open={catMode} onClose={() => setCatMode(false)} title="Manage Gallery Categories" size="md">
+        <CategoryManager
+          categories={categories}
+          onSave={handleSaveCategories}
+          isPending={updateConfig.isPending}
+          onClose={() => setCatMode(false)}
+        />
       </AdminModal>
     </div>
   );

@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Settings, Clock, Users, Phone, MapPin, Loader2, Save, Ban } from "lucide-react";
+import { Settings, Clock, Users, Phone, MapPin, Loader2, Save, Ban, CalendarX, Camera, Globe, X, Gift, Tag, Plus } from "lucide-react";
 import toast from "react-hot-toast";
 import Toggle from "@/components/ui/Toggle";
 import type { RestaurantConfig, DayHours } from "@/lib/config";
+import { fetcher, poster } from "@/lib/api/client";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -14,8 +15,7 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/config")
-      .then((r) => r.json())
+    fetcher<RestaurantConfig>("/api/config")
       .then((data) => setConfig(data))
       .catch(() => toast.error("Failed to load config"))
       .finally(() => setLoading(false));
@@ -33,17 +33,27 @@ export default function AdminSettings() {
     });
   }, []);
 
+  const addClosedDate = useCallback((dateStr: string) => {
+    if (!dateStr) return;
+    setConfig((prev) => {
+      if (!prev) return prev;
+      if (prev.closedDates.includes(dateStr)) return prev;
+      return { ...prev, closedDates: [...prev.closedDates, dateStr] };
+    });
+  }, []);
+
+  const removeClosedDate = useCallback((dateStr: string) => {
+    setConfig((prev) => {
+      if (!prev) return prev;
+      return { ...prev, closedDates: prev.closedDates.filter((d) => d !== dateStr) };
+    });
+  }, []);
+
   const handleSave = async () => {
     if (!config) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/config", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
-      });
-      if (!res.ok) throw new Error();
-      const updated = await res.json();
+      const updated = await poster<RestaurantConfig>("/api/config", config);
       setConfig(updated);
       toast.success("Settings saved");
     } catch {
@@ -193,6 +203,60 @@ export default function AdminSettings() {
           </div>
         </div>
 
+        {/* Closed Dates */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <CalendarX size={15} />
+            <span>Closed Dates (holidays, maintenance)</span>
+          </div>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <input
+              className="admin-input"
+              type="date"
+              id="closed-date-picker"
+              onBlur={(e) => addClosedDate(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  addClosedDate((e.target as HTMLInputElement).value);
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="admin-btn-secondary"
+              onClick={() => {
+                const input = document.getElementById("closed-date-picker") as HTMLInputElement;
+                if (input.value) {
+                  addClosedDate(input.value);
+                  input.value = "";
+                }
+              }}
+            >
+              Add
+            </button>
+          </div>
+          {config.closedDates.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "var(--a-text-3)", margin: 0 }}>No closed dates set.</p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {config.closedDates.map((date) => (
+                <span key={date} className="settings-tag">
+                  {date}
+                  <button
+                    type="button"
+                    className="settings-tag-remove"
+                    onClick={() => removeClosedDate(date)}
+                    aria-label={`Remove ${date}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Contact Info */}
         <div className="settings-section">
           <div className="settings-section-header">
@@ -213,6 +277,100 @@ export default function AdminSettings() {
             <span><MapPin size={13} /> Location</span>
             <input className="admin-input" value={config.location} onChange={(e) => updateField("location", e.target.value)} />
           </div>
+        </div>
+
+        {/* Social Media */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <Camera size={15} />
+            <span>Social Media</span>
+          </div>
+          <div className="settings-fields-row">
+            <div className="settings-field">
+              <span><Camera size={13} /> Instagram Handle</span>
+              <input className="admin-input" value={config.socialInstagram} onChange={(e) => updateField("socialInstagram", e.target.value)} placeholder="@your.handle" />
+            </div>
+            <div className="settings-field">
+              <span><Globe size={13} /> Facebook Page</span>
+              <input className="admin-input" value={config.socialFacebook} onChange={(e) => updateField("socialFacebook", e.target.value)} placeholder="Your Page Name" />
+            </div>
+          </div>
+        </div>
+
+        {/* Offers / Deals Toggle */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <Gift size={15} />
+            <span>Offers &amp; Deals</span>
+          </div>
+          <div className="settings-row">
+            <div className="settings-row-info">
+              <strong>Show Offers Section</strong>
+              <p>When disabled, the offers section won't appear on the site.</p>
+            </div>
+            <Toggle checked={config.showOffers} onChange={(v) => updateField("showOffers", v)} label="" />
+          </div>
+        </div>
+
+        {/* Event Types */}
+        <div className="settings-section">
+          <div className="settings-section-header">
+            <Tag size={15} />
+            <span>Event Types</span>
+          </div>
+          <p style={{ fontSize: "13px", color: "var(--a-text-3)", margin: "0 0 12px" }}>
+            Manage event type labels used in the admin events form.
+          </p>
+          <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+            <input
+              className="admin-input"
+              type="text"
+              id="event-type-input"
+              placeholder="e.g. Live Music"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  if (val && !config.eventTypes.includes(val)) {
+                    updateField("eventTypes", [...config.eventTypes, val]);
+                  }
+                  (e.target as HTMLInputElement).value = "";
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="admin-btn-secondary"
+              onClick={() => {
+                const input = document.getElementById("event-type-input") as HTMLInputElement;
+                const val = input.value.trim();
+                if (val && !config.eventTypes.includes(val)) {
+                  updateField("eventTypes", [...config.eventTypes, val]);
+                }
+                input.value = "";
+              }}
+            >
+              <Plus size={14} /> Add
+            </button>
+          </div>
+          {config.eventTypes.length === 0 ? (
+            <p style={{ fontSize: "13px", color: "var(--a-text-3)", margin: 0 }}>No event types defined.</p>
+          ) : (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {config.eventTypes.map((type) => (
+                <span key={type} className="settings-tag">
+                  {type}
+                  <button
+                    type="button"
+                    className="settings-tag-remove"
+                    onClick={() => updateField("eventTypes", config.eventTypes.filter((t) => t !== type))}
+                    aria-label={`Remove ${type}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

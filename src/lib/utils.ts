@@ -25,12 +25,12 @@ export function shimmer(width: number, height: number) {
   <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="g">
-        <stop stop-color="#1e2020" offset="20%" />
-        <stop stop-color="#282a2b" offset="50%" />
-        <stop stop-color="#1e2020" offset="70%" />
+        <stop stop-color="#e2d9ce" offset="20%" />
+        <stop stop-color="#d2c8ba" offset="50%" />
+        <stop stop-color="#e2d9ce" offset="70%" />
       </linearGradient>
     </defs>
-    <rect width="${width}" height="${height}" fill="#1e2020" />
+    <rect width="${width}" height="${height}" fill="#ece6dd" />
     <rect id="r" width="${width}" height="${height}" fill="url(#g)" />
   </svg>`;
 }

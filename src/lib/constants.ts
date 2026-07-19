@@ -76,8 +76,10 @@ export const adminLinks = [
   { href: "/admin/menu", label: "Menu", icon: "UtensilsCrossed" },
   { href: "/admin/gallery", label: "Gallery", icon: "Images" },
   { href: "/admin/events", label: "Events", icon: "PartyPopper" },
+  { href: "/admin/offers", label: "Offers", icon: "Gift" },
   { href: "/admin/staff", label: "Staff", icon: "Users" },
   { href: "/admin/messages", label: "Messages", icon: "Mail" },
+  { href: "/admin/settings", label: "Settings", icon: "Settings" },
 ];
 
 export const images = {
@@ -164,7 +166,7 @@ export const menuItems: MenuItem[] = [
     price: "IQD 10,000",
     dietary: ["SPICY", "HALAL"],
     image:
-      "https://images.unsplash.com/photo-1563379091339-03246963d51a?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=1000&q=85",
     visible: true,
   },
   {
@@ -186,7 +188,7 @@ export const menuItems: MenuItem[] = [
     price: "IQD 2,000",
     dietary: ["VEG"],
     image:
-      "https://images.unsplash.com/photo-1626078299034-2fdc62db6cdc?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=1000&q=85",
     visible: true,
   },
   {
@@ -220,7 +222,7 @@ export const menuItems: MenuItem[] = [
     price: "IQD 5,500",
     dietary: ["VEG"],
     image:
-      "https://images.unsplash.com/photo-1606525437679-037aca6a5e73?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=1000&q=85",
     visible: true,
   },
   {
@@ -321,7 +323,7 @@ export const menuItems: MenuItem[] = [
     price: "IQD 3,500",
     dietary: ["VEG"],
     image:
-      "https://images.unsplash.com/photo-1605197161470-5d2a9af1cdb0?auto=format&fit=crop&w=1000&q=85",
+      "https://images.unsplash.com/photo-1601050690597-d11ec9c172f0?auto=format&fit=crop&w=1000&q=85",
     visible: true,
   },
   {
@@ -470,6 +472,7 @@ export type Testimonial = {
   name: string;
   location: string;
   rating: number;
+  verified?: boolean;
 };
 
 export const testimonials: Testimonial[] = [
@@ -531,6 +534,6 @@ export const reservations: Reservation[] = [
 ];
 
 export const messages: Message[] = [
-  { id: "m1", name: "Layla", phone: "07500000001", email: "layla@example.com", subject: "Private Event", message: "Can we book the dining room for 20 guests?", read: false, createdAt: "2026-05-29T09:30:00.000Z" },
-  { id: "m2", name: "Haval", phone: "07500000002", email: "haval@example.com", subject: "Feedback", message: "The momo were excellent. Thank you.", read: true, replied: true, createdAt: "2026-05-28T15:10:00.000Z" },
+  { id: "m1", name: "Layla", phone: "07500000001", email: "layla@example.com", subject: "Private Event", message: "Can we book the dining room for 20 guests?", contactType: "enquiry", verified: false, read: false, createdAt: "2026-05-29T09:30:00.000Z" },
+  { id: "m2", name: "Haval", phone: "07500000002", email: "haval@example.com", subject: "Feedback", message: "The momo were excellent. Thank you.", contactType: "feedback", rating: 5, verified: true, read: true, replied: true, createdAt: "2026-05-28T15:10:00.000Z" },
 ];

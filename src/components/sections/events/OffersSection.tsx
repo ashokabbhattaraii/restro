@@ -1,41 +1,19 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-
-
-const offers = [
-  {
-    pct: "20%",
-    unit: "OFF",
-    title: "Happy Hour",
-    desc: "Daily bar pours and selected snacks from 5–8 PM. Join us for the golden hour.",
-    validity: "Valid Daily · 5:00 PM – 8:00 PM",
-    cta: "Reserve a Spot",
-  },
-  {
-    pct: "Set",
-    unit: "Menu",
-    title: "Weekend Family Set",
-    desc: "A generous shared menu for four or more guests — the ideal weekend tradition.",
-    validity: "Valid Sat & Sun",
-    cta: "Book a Table",
-  },
-  {
-    pct: "Free",
-    unit: "Gift",
-    title: "Birthday Special",
-    desc: "Complimentary cake plating and Nepali chai for birthday tables. Let us celebrate you.",
-    validity: "With advance booking",
-    cta: "Book Now",
-  },
-];
+import { useActiveOffers } from "@/hooks/useApi";
+import { useConfig } from "@/hooks/useConfig";
 
 export default function OffersSection() {
   initGSAP();
+  const { config } = useConfig();
+  const { data: offers = [] } = useActiveOffers();
   const sectionRef = useRef<HTMLElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -62,7 +40,6 @@ export default function OffersSection() {
         },
       });
 
-      /* Animate pct numbers */
       const pcts = gridRef.current?.querySelectorAll(".offer-pct-anim") ?? [];
       gsap.fromTo(
         pcts,
@@ -75,7 +52,9 @@ export default function OffersSection() {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [offers]);
+
+  if (!config.showOffers || offers.length === 0) return null;
 
   return (
     <section className="section offer-section motif" id="offers" ref={sectionRef}>
@@ -89,27 +68,25 @@ export default function OffersSection() {
         </div>
 
         <div className="offer-grid" ref={gridRef}>
-          {offers.map(({ pct, unit, title, desc, validity, cta }) => (
-            <div key={title} className="offer-card-wrap" style={{ opacity: 0 }}>
+          {offers.map((offer) => (
+            <div key={offer.id} className="offer-card-wrap" style={{ opacity: 0 }}>
               <Card className="offer-card" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-                {/* Large percentage */}
                 <div className="offer-pct-anim" style={{
                   display: "flex",
                   alignItems: "baseline",
                   gap: "4px",
                   marginBottom: "16px",
                 }}>
-                  <span className="offer-card-pct">{pct}</span>
+                  <span className="offer-card-pct">{offer.pct}</span>
                   <span style={{
                     fontFamily: "var(--font-display), Georgia, serif",
                     fontSize: "20px",
                     fontWeight: 700,
                     color: "var(--muted)",
                     letterSpacing: "0.06em",
-                  }}>{unit}</span>
+                  }}>{offer.unit}</span>
                 </div>
 
-                {/* Gold divider */}
                 <div style={{
                   width: "40px",
                   height: "2px",
@@ -117,16 +94,16 @@ export default function OffersSection() {
                   marginBottom: "16px",
                 }} />
 
-                <h3 style={{ fontSize: "22px", margin: "0 0 10px" }}>{title}</h3>
-                <p style={{ flex: 1, marginBottom: "16px", lineHeight: 1.65, fontSize: "14px" }}>{desc}</p>
+                <h3 style={{ fontSize: "22px", margin: "0 0 10px" }}>{offer.title}</h3>
+                <p style={{ flex: 1, marginBottom: "16px", lineHeight: 1.65, fontSize: "14px" }}>{offer.description}</p>
 
                 <div className="offer-validity" style={{ marginBottom: "20px" }}>
                   <span>🗓</span>
-                  {validity}
+                  {offer.validity}
                 </div>
 
                 <Button href="/reservation" variant="ghost" style={{ fontSize: "12px", alignSelf: "flex-start" }}>
-                  {cta}
+                  {offer.cta}
                 </Button>
                 <small style={{
                   display: "block",

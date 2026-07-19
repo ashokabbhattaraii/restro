@@ -1,6 +1,6 @@
 'use client'
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import api from '@/lib/api'
+import { api, fetcher, poster } from '@/lib/api/client'
 
 interface AdminUser {
   id: string
@@ -22,19 +22,19 @@ export function AdminProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/api/auth/me')
-      .then((res) => setAdmin(res.data.admin))
+    fetcher<{ admin: AdminUser }>('/api/auth/me')
+      .then((res) => setAdmin(res.admin))
       .catch(() => setAdmin(null))
       .finally(() => setLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {
-    const res = await api.post('/api/auth/login', { email, password })
-    setAdmin(res.data.admin)
+    const res = await poster<{ admin: AdminUser }>('/api/auth/login', { email, password })
+    setAdmin(res.admin)
   }
 
   const logout = async () => {
-    await api.post('/api/auth/logout')
+    await poster('/api/auth/logout', {})
     setAdmin(null)
   }
 

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";

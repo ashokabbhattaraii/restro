@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import PageHero from "@/components/shared/PageHero";
 import SectionLabel from "@/components/ui/SectionLabel";

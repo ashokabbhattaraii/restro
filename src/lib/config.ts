@@ -15,6 +15,12 @@ export type RestaurantConfig = {
   phoneTwo: string;
   location: string;
   message: string;
+  socialInstagram: string;
+  socialFacebook: string;
+  showOffers: boolean;
+  eventTypes: string[];
+  menuCategories: string[];
+  galleryCategories: string[];
 };
 
 export const DEFAULT_CONFIG: RestaurantConfig = {
@@ -36,4 +42,10 @@ export const DEFAULT_CONFIG: RestaurantConfig = {
   phoneTwo: "07507752476",
   location: "46001 As Sulaymaniyah, Iraq",
   message: "",
+  socialInstagram: "@nepali.restaurant.bar",
+  socialFacebook: "Nepali Restaurant & Bar",
+  showOffers: true,
+  eventTypes: ["Live Music", "Happy Hour", "Festival", "Special", "Cultural", "Dinner"],
+  menuCategories: ["All", "Nepali", "Indian", "Chinese", "BBQ & Grill", "Drinks & Bar", "Desserts"],
+  galleryCategories: ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"],
 };

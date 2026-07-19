@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   async headers() {
@@ -15,7 +19,7 @@ const nextConfig: NextConfig = {
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com",
       "font-src 'self'",
       "frame-src https://www.google.com",
       "connect-src 'self' http://localhost:5000",

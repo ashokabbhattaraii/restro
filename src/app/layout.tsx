@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     "Ultra-premium Nepali, Chinese, Indian cuisine and bar in As Sulaymaniyah, Iraq.",
 };
 
-const themeScript = `try{var t=localStorage.getItem("restaurant-theme");document.documentElement.dataset.theme=t==="light"?"light":"dark"}catch(e){document.documentElement.dataset.theme="dark"}`;
+const themeScript = `try{var t=localStorage.getItem("restaurant-theme"),m=window.matchMedia("(prefers-color-scheme:dark)");document.documentElement.dataset.theme=t||(m.matches?"dark":"light")}catch(e){document.documentElement.dataset.theme="light"}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

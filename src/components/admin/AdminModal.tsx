@@ -27,7 +27,7 @@ export default function AdminModal({ open, onClose, title, children, size = "md"
 
   if (!open) return null;
 
-  const widths = { sm: 400, md: 520, lg: 680 };
+  const widths = { sm: 440, md: 760, lg: 960 };
 
   return (
     <div className="admin-modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>

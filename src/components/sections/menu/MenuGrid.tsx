@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import CategoryTabs from "@/components/sections/menu/CategoryTabs";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
-import { menuCategories } from "@/lib/constants";
 import { slugify } from "@/lib/utils";
 import { useMenuItems } from "@/hooks/useApi";
+import { useConfig } from "@/hooks/useConfig";
 import type { MenuItem } from "@/types";
 
 
@@ -45,6 +47,8 @@ export default function MenuGrid() {
   initGSAP();
   const [active, setActive] = useState("All");
   const { data: data = [] } = useMenuItems();
+  const { config } = useConfig();
+  const menuCategories = useMemo(() => config.menuCategories.length > 0 ? config.menuCategories : ["All", "Nepali", "Indian", "Chinese", "BBQ & Grill", "Drinks & Bar", "Desserts"], [config.menuCategories]);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevActive = useRef(active);
 
@@ -58,7 +62,7 @@ export default function MenuGrid() {
     applyHash();
     window.addEventListener("hashchange", applyHash);
     return () => window.removeEventListener("hashchange", applyHash);
-  }, []);
+  }, [menuCategories]);
 
   const grouped = useMemo(() => {
     const filtered = active === "All" ? data : data.filter((item) => item.category === active);

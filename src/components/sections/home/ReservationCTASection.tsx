@@ -1,13 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { gsap, ScrollTrigger, initGSAP } from "@/lib/gsap";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
-import { restaurant } from "@/lib/constants";
+import { useConfig } from "@/hooks/useConfig";
 
 
 export default function ReservationCTASection() {
   initGSAP();
+  const { config } = useConfig();
   const sectionRef = useRef<HTMLElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const ring2Ref = useRef<HTMLDivElement>(null);
@@ -83,31 +86,11 @@ export default function ReservationCTASection() {
       />
 
       <div className="container narrow-center" ref={contentRef} style={{ gap: "20px" }}>
-        {/* Pre-heading label */}
-        <div style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: "8px",
-          border: "1px solid rgba(242,202,80,0.35)",
-          borderRadius: "50px",
-          padding: "8px 18px",
-          fontSize: "11px",
-          fontWeight: 700,
-          letterSpacing: "0.16em",
-          textTransform: "uppercase" as const,
-          color: "var(--primary)",
-          background: "rgba(242,202,80,0.06)",
-          marginBottom: "4px",
-        }}>
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--gold)", display: "inline-block" }} />
-          Reservations Open
-        </div>
-
         <h2 ref={headingRef} style={{ opacity: 0, fontSize: "clamp(34px, 5vw, 60px)", lineHeight: 1.02 }}>
           Book Your Table Tonight
         </h2>
         <p ref={textRef} style={{ opacity: 0, maxWidth: "520px", fontSize: "17px" }}>
-          Reservations available 7 days a week, 11 AM – 11 PM.
+          Reservations available 7 days a week.
           Experience Himalayan warmth, refined service, and unforgettable flavours.
         </p>
 
@@ -118,7 +101,7 @@ export default function ReservationCTASection() {
         <div ref={phoneRef} style={{ opacity: 0, display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" as const, justifyContent: "center" }}>
           <span style={{ fontSize: "13px", color: "var(--muted)", letterSpacing: "0.06em" }}>Or call us directly:</span>
           <strong style={{ color: "var(--primary)", fontFamily: "var(--font-display), Georgia, serif", fontSize: "16px", letterSpacing: "0.04em" }}>
-            📞 {restaurant.phoneOne} · {restaurant.phoneTwo}
+            📞 {config.phoneOne} · {config.phoneTwo}
           </strong>
         </div>
       </div>
