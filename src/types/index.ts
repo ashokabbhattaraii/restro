@@ -55,6 +55,7 @@ export type Reservation = {
   guests: number;
   occasion?: string;
   requests?: string;
+  recaptchaToken?: string;
   remarks?: string;
   status: "Confirmed" | "Pending" | "Cancelled" | "Contacted";
 };
@@ -69,6 +70,7 @@ export type Message = {
   message: string;
   contactType: "feedback" | "enquiry" | "other";
   rating?: number; // 1-5, only for feedback
+  recaptchaToken?: string;
   verified: boolean; // admin approved for public display
   read: boolean;
   replied?: boolean;

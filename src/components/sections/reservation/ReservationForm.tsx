@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initGSAP } from "@/lib/gsap";
 import PageHero from "@/components/shared/PageHero";
 import Button from "@/components/ui/Button";
@@ -14,6 +13,7 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
+import RecaptchaWidget, { type RecaptchaWidgetRef } from "@/components/ui/RecaptchaWidget";
 import { restaurant } from "@/lib/constants";
 import { reservationSchema } from "@/lib/validations";
 import { useCreateReservation } from "@/hooks/useApi";
@@ -21,6 +21,8 @@ import { useFormDraft } from "@/hooks/useFormDraft";
 import type { RestaurantConfig } from "@/lib/config";
 import { useConfig } from "@/hooks/useConfig";
 import { Loader2, Clock } from "lucide-react";
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
 
 
 const occasions = ["Birthday", "Anniversary", "Business", "Date Night", "Other"];
@@ -81,12 +83,18 @@ export default function ReservationForm() {
   const formCardRef = useRef<HTMLDivElement>(null);
   const hoursCardRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
+  const recaptchaRef = useRef<RecaptchaWidgetRef>(null);
   const createReservation = useCreateReservation();
 
   const form = useForm<ReservationFormInput, unknown, ReservationFormOutput>({
     resolver: zodResolver(reservationSchema),
-    defaultValues: { guests: 2, occasion },
+    mode: "onTouched",
+    defaultValues: { guests: 2, occasion, name: "", phone: "", email: "", date: "", time: "", requests: "" },
   });
+  const {
+    register,
+    formState: { errors },
+  } = form;
 
   const { clearDraft } = useFormDraft(form, "reservation");
 
@@ -163,13 +171,24 @@ export default function ReservationForm() {
       toast.error("We are currently not accepting reservations.");
       return;
     }
+    const token = recaptchaRef.current?.getValue();
+    if (!token) {
+      toast.error("Please complete the reCAPTCHA verification.");
+      return;
+    }
+    if (!RECAPTCHA_SITE_KEY) {
+      toast.error("reCAPTCHA is not configured. Please contact support.");
+      return;
+    }
     try {
-      await createReservation.mutateAsync({ ...values, occasion });
+      await createReservation.mutateAsync({ ...values, occasion, recaptchaToken: token });
       toast.success("Reservation request received! We'll confirm shortly.");
       form.reset();
+      recaptchaRef.current?.reset();
       clearDraft();
     } catch {
       toast.error("Reservation could not be sent.");
+      recaptchaRef.current?.reset();
     }
   });
 
@@ -225,25 +244,57 @@ export default function ReservationForm() {
                 </div>
 
                 <div className="form-grid">
-                  <label>
+                  <label className={`form-field ${errors.name ? "has-error" : ""}`}>
                     <span>Full Name</span>
-                    <Input {...form.register("name")} placeholder="Your full name" />
+                    <Input
+                      {...register("name")}
+                      placeholder="Your full name"
+                      aria-invalid={!!errors.name}
+                      className={errors.name ? "field-error" : ""}
+                    />
+                    {errors.name && <span className="form-error">{errors.name.message}</span>}
                   </label>
-                  <label>
+                  <label className={`form-field ${errors.phone ? "has-error" : ""}`}>
                     <span>Phone Number</span>
-                    <Input {...form.register("phone")} type="tel" placeholder="+964 xxx xxx xxxx" />
+                    <Input
+                      {...register("phone")}
+                      type="tel"
+                      placeholder="+964 xxx xxx xxxx"
+                      aria-invalid={!!errors.phone}
+                      className={errors.phone ? "field-error" : ""}
+                    />
+                    {errors.phone && <span className="form-error">{errors.phone.message}</span>}
                   </label>
-                  <label>
+                  <label className={`form-field ${errors.email ? "has-error" : ""}`}>
                     <span>Email Address</span>
-                    <Input {...form.register("email")} type="email" placeholder="you@example.com" />
+                    <Input
+                      {...register("email")}
+                      type="email"
+                      placeholder="you@example.com"
+                      aria-invalid={!!errors.email}
+                      className={errors.email ? "field-error" : ""}
+                    />
+                    {errors.email && <span className="form-error">{errors.email.message}</span>}
                   </label>
-                  <label>
+                  <label className={`form-field ${errors.date ? "has-error" : ""}`}>
                     <span>Date</span>
-                    <Input {...form.register("date")} type="date" min={todayStr} max={maxDate} />
+                    <Input
+                      {...register("date")}
+                      type="date"
+                      min={todayStr}
+                      max={maxDate}
+                      aria-invalid={!!errors.date}
+                      className={errors.date ? "field-error" : ""}
+                    />
+                    {errors.date && <span className="form-error">{errors.date.message}</span>}
                   </label>
-                  <label>
+                  <label className={`form-field ${errors.time ? "has-error" : ""}`}>
                     <span>Time</span>
-                    <Select {...form.register("time")}>
+                    <Select
+                      {...register("time")}
+                      aria-invalid={!!errors.time}
+                      className={errors.time ? "field-error" : ""}
+                    >
                       {!selectedDate ? (
                         <option value="">Select a date first</option>
                       ) : dayStatus === "closed" ? (
@@ -254,14 +305,20 @@ export default function ReservationForm() {
                         times.map((time) => <option key={time}>{time}</option>)
                       )}
                     </Select>
+                    {errors.time && <span className="form-error">{errors.time.message}</span>}
                   </label>
-                  <label>
+                  <label className={`form-field ${errors.guests ? "has-error" : ""}`}>
                     <span>Number of Guests</span>
-                    <Select {...form.register("guests")}>
+                    <Select
+                      {...register("guests")}
+                      aria-invalid={!!errors.guests}
+                      className={errors.guests ? "field-error" : ""}
+                    >
                       {Array.from({ length: maxGuests }, (_, i) => (
                         <option key={i + 1} value={i + 1}>{i + 1}{i === maxGuests - 1 ? "+" : ""} Guest{i > 0 ? "s" : ""}</option>
                       ))}
                     </Select>
+                    {errors.guests && <span className="form-error">{errors.guests.message}</span>}
                   </label>
                 </div>
 
@@ -281,16 +338,32 @@ export default function ReservationForm() {
                   </div>
                 </div>
 
-                <label>
+                <label className={`form-field full-width ${errors.requests ? "has-error" : ""}`}>
                   <span>Special Requests</span>
                   <Textarea
-                    {...form.register("requests")}
+                    {...register("requests")}
                     rows={3}
                     placeholder="Dietary requirements, seating preferences, celebrations..."
+                    aria-invalid={!!errors.requests}
+                    className={errors.requests ? "field-error" : ""}
                   />
+                  {errors.requests && <span className="form-error">{errors.requests.message}</span>}
                 </label>
 
-                <Button className="submit-btn" type="submit" disabled={createReservation.isPending || (!!selectedDate && dayStatus === "closed")}>
+                {RECAPTCHA_SITE_KEY && (
+                  <div style={{ margin: "20px 0" }}>
+                    <RecaptchaWidget
+                      ref={recaptchaRef}
+                      siteKey={RECAPTCHA_SITE_KEY}
+                    />
+                  </div>
+                )}
+
+                <Button
+                  className="submit-btn"
+                  type="submit"
+                  disabled={createReservation.isPending || (!!selectedDate && dayStatus === "closed") || Object.keys(errors).length > 0}
+                >
                   {createReservation.isPending ? "Submitting..." : "Confirm Reservation"}
                 </Button>
 

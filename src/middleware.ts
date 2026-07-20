@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { logger } from "@/lib/logger";
 
 function generateId(): string {
   return crypto.randomUUID().slice(0, 8);
-}
-
-function shouldLog(pathname: string): boolean {
-  if (pathname.startsWith("/_next/")) return false;
-  if (pathname.startsWith("/favicon")) return false;
-  if (pathname.startsWith("/images/")) return false;
-  return true;
 }
 
 export async function middleware(request: NextRequest) {
@@ -32,17 +24,8 @@ export async function middleware(request: NextRequest) {
   response.headers.set("x-request-id", requestId);
   response.headers.set("x-response-time", `${Date.now() - start}ms`);
 
-  if (shouldLog(pathname)) {
-    const duration = Date.now() - start;
-    logger.api.success(
-      request.method,
-      pathname + search,
-      response.status,
-      duration,
-      requestId
-    );
-  }
-
+  // Request logging lives in the API server (my-backend), which is where the
+  // API actually runs — logging it here only ever described page navigations.
   return response;
 }
 

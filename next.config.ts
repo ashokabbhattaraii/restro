@@ -17,11 +17,11 @@ const nextConfig: NextConfig = {
   async headers() {
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com",
-      "font-src 'self'",
-      "frame-src https://www.google.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.google.com https://www.gstatic.com",
+      "style-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://www.google.com https://www.gstatic.com",
+      "font-src 'self' https://www.gstatic.com",
+      "frame-src https://www.google.com https://www.recaptcha.net",
       "connect-src 'self' http://localhost:5000",
       "base-uri 'self'",
       "form-action 'self'",

@@ -17,14 +17,15 @@ export const imageRef = z
   );
 
 export const reservationSchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  phone: z.string().trim().min(7).max(32),
-  email: z.string().trim().email().optional().or(z.literal("")),
-  date: z.string().trim().min(4).max(40),
-  time: z.string().trim().min(3).max(20),
-  guests: z.coerce.number().int().min(1).max(30),
+  name: z.string().trim().min(2, "Please enter your full name").max(120, "Name is too long"),
+  phone: z.string().trim().min(7, "Enter a valid phone number").max(32, "Phone number is too long"),
+  email: z.string().trim().email("Enter a valid email").optional().or(z.literal("")),
+  date: z.string().trim().min(4, "Please select a date").max(40),
+  time: z.string().trim().min(3, "Please select a time").max(20),
+  guests: z.coerce.number().int("Enter a valid number").min(1, "At least 1 guest").max(30, "Maximum 30 guests"),
   occasion: z.string().trim().max(80).optional(),
-  requests: z.string().trim().max(1000).optional(),
+  requests: z.string().trim().max(1000, "Message is too long").optional(),
+  recaptchaToken: z.string().trim().min(1, "reCAPTCHA verification is required"),
 });
 
 export const messageSchema = z.object({
@@ -35,13 +36,14 @@ export const messageSchema = z.object({
   message: z.string().trim().min(5).max(2000),
   contactType: z.enum(["feedback", "enquiry", "other"]),
   rating: z.number().int().min(1).max(5).optional(),
+  recaptchaToken: z.string().trim().min(1, "reCAPTCHA verification is required"),
 });
 
 export const menuItemSchema = z.object({
-  name: z.string().trim().min(2).max(120),
-  category: z.string().trim().min(2).max(80),
-  description: z.string().trim().min(5).max(500),
-  price: z.string().trim().min(2).max(40),
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(120, "Name is too long"),
+  category: z.string().trim().min(2, "Select a category").max(80, "Category is too long"),
+  description: z.string().trim().min(5, "Description must be at least 5 characters").max(500, "Description is too long"),
+  price: z.string().trim().min(2, "Enter a price").max(40, "Price is too long"),
   dietary: z.array(z.string().trim().max(30)).default([]),
   image: imageRef,
   featured: z.boolean().optional(),

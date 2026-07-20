@@ -6,8 +6,8 @@ import * as XLSX from "xlsx";
 import toast from "react-hot-toast";
 import FoodImage from "@/components/shared/FoodImage";
 import AdminModal from "@/components/admin/AdminModal";
+import MenuItemForm from "@/components/admin/MenuItemForm";
 import Toggle from "@/components/ui/Toggle";
-import ImageUploader from "@/components/admin/ImageUploader";
 import { useConfig } from "@/hooks/useConfig";
 import { useUpdateConfig } from "@/hooks/useUpdateConfig";
 import {
@@ -112,8 +112,6 @@ export default function AdminMenu() {
   const [catMode, setCatMode] = useState(false);
   const [editItem, setEditItem] = useState<MenuItem | null>(null);
   const [deleteItem, setDeleteItem] = useState<MenuItem | null>(null);
-  const [editFeatured, setEditFeatured] = useState(false);
-  const [editVisible, setEditVisible] = useState(true);
   const [bulkMode, setBulkMode] = useState(false);
   const [bulkPrice, setBulkPrice] = useState("");
   const [importMode, setImportMode] = useState(false);
@@ -136,8 +134,6 @@ export default function AdminMenu() {
 
   const openEdit = (item: MenuItem) => {
     setEditItem(item);
-    setEditFeatured(Boolean(item.featured));
-    setEditVisible(Boolean(item.visible));
     setImageUrl(item.image || "");
   };
 
@@ -149,49 +145,6 @@ export default function AdminMenu() {
   const openAdd = () => {
     setAddMode(true);
     setImageUrl("");
-  };
-
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editItem) return;
-    const form = e.currentTarget;
-    try {
-      await updateMenuItem.mutateAsync({
-        id: (editItem._id || editItem.id)!,
-        name: (form.elements.namedItem("name") as HTMLInputElement).value,
-        category: (form.elements.namedItem("category") as HTMLSelectElement).value as MenuItem["category"],
-        price: (form.elements.namedItem("price") as HTMLInputElement).value,
-        description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
-        image: imageUrl,
-        featured: editFeatured,
-        visible: editVisible,
-      });
-      toast.success("Menu item updated");
-      closeEdit();
-    } catch {
-      toast.error("Failed to update menu item");
-    }
-  };
-
-  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    try {
-      await createMenuItem.mutateAsync({
-        name: (form.elements.namedItem("name") as HTMLInputElement).value,
-        category: (form.elements.namedItem("category") as HTMLSelectElement).value as MenuItem["category"],
-        price: (form.elements.namedItem("price") as HTMLInputElement).value,
-        description: (form.elements.namedItem("description") as HTMLTextAreaElement).value,
-        image: imageUrl,
-        featured: (form.elements.namedItem("featured") as HTMLInputElement).checked,
-        visible: true,
-      });
-      toast.success("Menu item created");
-      setAddMode(false);
-      setImageUrl("");
-    } catch {
-      toast.error("Failed to create menu item");
-    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -330,8 +283,6 @@ export default function AdminMenu() {
 
   const barItems = filter === "All" ? menuItems.filter((i) => i.category.toLowerCase() === "drinks & bar") : [];
   const foodItems = filter === "All" ? menuItems.filter((i) => i.category.toLowerCase() !== "drinks & bar") : filtered;
-
-  const categoryOptions = categories.filter((c) => c !== "All");
 
   return (
     <div className="admin-page-content">
@@ -542,84 +493,80 @@ export default function AdminMenu() {
 
       {/* Add Item Modal */}
       <AdminModal open={addMode} onClose={() => { setAddMode(false); setImageUrl(""); }} title="Add Menu Item" size="md">
-        <form className="admin-form" onSubmit={handleCreate}>
-          <label>
-            <span>Name</span>
-            <input className="admin-input" name="name" required />
-          </label>
-          <label>
-            <span>Category</span>
-            <select className="admin-input admin-select" name="category" defaultValue={categoryOptions[0] || "Nepali"}>
-              {categoryOptions.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            <span>Price</span>
-            <input className="admin-input" name="price" placeholder="IQD 10,000" required />
-          </label>
-          <label>
-            <span>Description</span>
-            <textarea className="admin-input admin-textarea" name="description" rows={3} />
-          </label>
-          <label>
-            <span>Image</span>
-            <ImageUploader value={imageUrl} onChange={setImageUrl} folder="menu" />
-          </label>
-          <label className="admin-toggle-row" style={{ flexDirection: "row", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0, fontWeight: 400 }}>
-            <input type="checkbox" name="featured" /> <span>Featured item</span>
-          </label>
-          <div className="admin-detail-actions">
-            <button type="submit" className="admin-btn-primary" disabled={createMenuItem.isPending || !imageUrl}>
-              {createMenuItem.isPending ? <><Loader2 size={13} className="animate-spin" /> Creating…</> : "Create Item"}
-            </button>
-            <button type="button" className="admin-btn-sm" onClick={() => { setAddMode(false); setImageUrl(""); }}>Cancel</button>
-          </div>
-        </form>
+        <MenuItemForm
+          image={imageUrl}
+          onImageChange={setImageUrl}
+          isPending={createMenuItem.isPending}
+          submitLabel="Create Item"
+          onCancel={() => { setAddMode(false); setImageUrl(""); }}
+          onSubmit={async (values) => {
+            try {
+              await createMenuItem.mutateAsync({
+                name: values.name,
+                category: values.category as MenuItem["category"],
+                price: values.price,
+                description: values.description,
+                image: imageUrl,
+                featured: Boolean(values.featured),
+                visible: values.visible === undefined ? true : Boolean(values.visible),
+              });
+              toast.success("Menu item created");
+              setAddMode(false);
+              setImageUrl("");
+            } catch {
+              toast.error("Failed to create menu item");
+            }
+          }}
+        />
       </AdminModal>
 
       {/* Edit Modal */}
       <AdminModal open={!!editItem} onClose={closeEdit} title="Edit Menu Item" size="md">
         {editItem && (
-          <form className="admin-form" onSubmit={handleSave}>
-            <label>
-              <span>Name</span>
-              <input className="admin-input" name="name" defaultValue={editItem.name} required />
-            </label>
-            <label>
-              <span>Category</span>
-              <select className="admin-input admin-select" name="category" defaultValue={editItem.category}>
-                {categoryOptions.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              <span>Price</span>
-              <input className="admin-input" name="price" defaultValue={editItem.price} required />
-            </label>
-            <label>
-              <span>Description</span>
-              <textarea className="admin-input admin-textarea" name="description" rows={3} defaultValue={editItem.description || ""} />
-            </label>
-            <label>
-              <span>Image</span>
-              <ImageUploader value={imageUrl} onChange={setImageUrl} folder="menu" />
-            </label>
-            <div className="admin-toggle-row">
-              <Toggle checked={editFeatured} onChange={setEditFeatured} label="Featured" />
-              <Toggle checked={editVisible} onChange={setEditVisible} label="Visible" />
-            </div>
-            <div className="admin-detail-actions">
-              <button type="submit" className="admin-btn-primary" disabled={updateMenuItem.isPending}>
-                {updateMenuItem.isPending ? <><Loader2 size={13} className="animate-spin" /> Saving…</> : "Save Changes"}
-              </button>
-              <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={() => { setEditItem(null); setDeleteItem(editItem); }}>
-                <Trash2 size={13} /> Delete
-              </button>
-            </div>
-          </form>
+          <MenuItemForm
+            defaultValues={{
+              name: editItem.name,
+              category: editItem.category,
+              price: editItem.price,
+              description: editItem.description || "",
+              featured: Boolean(editItem.featured),
+              visible: Boolean(editItem.visible),
+            }}
+            image={imageUrl}
+            onImageChange={setImageUrl}
+            isPending={updateMenuItem.isPending}
+            submitLabel="Save Changes"
+            onCancel={closeEdit}
+            onSubmit={async (values) => {
+              try {
+                await updateMenuItem.mutateAsync({
+                  id: (editItem._id || editItem.id)!,
+                  name: values.name,
+                  category: values.category as MenuItem["category"],
+                  price: values.price,
+                  description: values.description,
+                  image: imageUrl,
+                  featured: Boolean(values.featured),
+                  visible: values.visible === undefined ? true : Boolean(values.visible),
+                });
+                toast.success("Menu item updated");
+                closeEdit();
+              } catch {
+                toast.error("Failed to update menu item");
+              }
+            }}
+          />
+        )}
+        {editItem && (
+          <div className="admin-detail-actions" style={{ marginTop: 12 }}>
+            <button
+              type="button"
+              className="admin-btn-sm admin-btn-sm--danger"
+              onClick={() => { setDeleteItem(editItem); }}
+            >
+              <Trash2 size={13} /> Delete
+            </button>
+          </div>
         )}
       </AdminModal>
 

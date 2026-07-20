@@ -43,10 +43,10 @@ const CONTACT_TYPE_LABELS: Record<Message["contactType"], string> = {
   other: "Other",
 };
 
-const CONTACT_TYPE_COLORS: Record<Message["contactType"], string> = {
-  feedback: "#27ae60",
-  enquiry: "#3498db",
-  other: "var(--a-text-3)",
+const CONTACT_TYPE_CLASSES: Record<Message["contactType"], string> = {
+  feedback: "badge-feedback",
+  enquiry: "badge-enquiry",
+  other: "badge-other",
 };
 
 const READ_OPTIONS = [
@@ -142,10 +142,15 @@ export default function AdminMessages() {
     [filtered, currentPage, rowsPerPage]
   );
 
-  const unreadCount = messages.filter((m) => !m.read).length;
+  // Unfiltered list, used ONLY for the tab badges and the global unread count so
+  // those numbers stay stable regardless of which tab is currently open.
+  const { data: allMessages = [] } = useAdminMessages({});
+  const feedbackTotal = allMessages.filter((m) => m.contactType === "feedback").length;
+  const otherTotal = allMessages.filter((m) => m.contactType !== "feedback").length;
+
+  const unreadCount = allMessages.filter((m) => !m.read).length;
   const verifiedCount = messages.filter((m) => m.verified).length;
   const unverifiedCount = messages.filter((m) => !m.verified).length;
-  const otherCount = messages.filter((m) => m.contactType !== "feedback").length;
 
   const openModal = useCallback((row: Message | null, mode: ModalMode) => {
     setSelectedRow(row);
@@ -226,9 +231,9 @@ export default function AdminMessages() {
     );
   }
 
-  const activeTabCounts = activeTab === "feedback" 
-    ? { total: verifiedCount + unverifiedCount, verified: verifiedCount, unverified: unverifiedCount }
-    : { total: otherCount, verified: 0, unverified: 0 };
+  const activeTabCounts = activeTab === "feedback"
+    ? { total: feedbackTotal, verified: verifiedCount, unverified: unverifiedCount }
+    : { total: otherTotal, verified: 0, unverified: 0 };
 
   return (
     <div className="admin-page-content">
@@ -254,7 +259,7 @@ export default function AdminMessages() {
             className={`admin-tab ${activeTab === "feedback" ? "admin-tab--active" : ""}`}
             onClick={() => { setActiveTab("feedback"); setVerifiedFilter("all"); setCurrentPage(1); }}
           >
-            <Star size={14} /> Feedback <span className="admin-tab-count">{activeTabCounts.total}</span>
+            <Star size={14} /> Feedback <span className="admin-tab-count">{feedbackTotal}</span>
           </button>
           <button
             role="tab"
@@ -262,7 +267,7 @@ export default function AdminMessages() {
             className={`admin-tab ${activeTab === "other" ? "admin-tab--active" : ""}`}
             onClick={() => { setActiveTab("other"); setCurrentPage(1); }}
           >
-            <Mail size={14} /> Other <span className="admin-tab-count">{activeTabCounts.total}</span>
+            <Mail size={14} /> Other <span className="admin-tab-count">{otherTotal}</span>
           </button>
         </div>
 
@@ -327,14 +332,7 @@ export default function AdminMessages() {
               key: "contactType",
               label: "Type",
               render: (value) => (
-                <span
-                  className="admin-badge"
-                  style={{
-                    background: `${CONTACT_TYPE_COLORS[value as Message["contactType"]] || "var(--a-text-3)"}20`,
-                    color: CONTACT_TYPE_COLORS[value as Message["contactType"]] || "var(--a-text-3)",
-                    border: `1px solid ${CONTACT_TYPE_COLORS[value as Message["contactType"]] || "var(--a-text-3)"}30`,
-                  }}
-                >
+                <span className={`admin-badge ${CONTACT_TYPE_CLASSES[value as Message["contactType"]] || "badge-other"}`}>
                   {CONTACT_TYPE_LABELS[value as Message["contactType"]] || value}
                 </span>
               ),
@@ -414,14 +412,7 @@ export default function AdminMessages() {
           <div className="admin-detail-grid">
             <div className="admin-detail-item admin-detail-item--full" style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
               <div style={{ flexShrink: 0 }}>
-                <span
-                  className="admin-badge"
-                  style={{
-                    background: `${CONTACT_TYPE_COLORS[selectedRow.contactType]}20`,
-                    color: CONTACT_TYPE_COLORS[selectedRow.contactType],
-                    border: `1px solid ${CONTACT_TYPE_COLORS[selectedRow.contactType]}30`,
-                  }}
-                >
+                <span className={`admin-badge ${CONTACT_TYPE_CLASSES[selectedRow.contactType] || "badge-other"}`}>
                   {CONTACT_TYPE_LABELS[selectedRow.contactType]}
                 </span>
               </div>

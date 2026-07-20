@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
+import { useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { z } from "zod";
 import { Star, Loader2 } from "lucide-react";
@@ -10,9 +11,12 @@ import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Textarea from "@/components/ui/Textarea";
+import RecaptchaWidget, { type RecaptchaWidgetRef } from "@/components/ui/RecaptchaWidget";
 import { messageSchema } from "@/lib/validations";
 import { useCreateMessage } from "@/hooks/useApi";
 import { useFormDraft } from "@/hooks/useFormDraft";
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
 
 type ContactData = z.infer<typeof messageSchema>;
 
@@ -36,20 +40,36 @@ export default function ContactForm() {
   const contactType = useWatch({ control: form.control, name: "contactType" }) || "enquiry";
   const rating = useWatch({ control: form.control, name: "rating" });
   const subjectOptions = SUBJECT_OPTIONS[contactType] || SUBJECT_OPTIONS.enquiry;
+  const recaptchaRef = useRef<RecaptchaWidgetRef>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const isFeedback = contactType === "feedback";
 
   const submit = form.handleSubmit(async (values) => {
+    const token = recaptchaToken || recaptchaRef.current?.getValue();
+    if (!token) {
+      toast.error("Please complete the reCAPTCHA verification.");
+      return;
+    }
+    if (!RECAPTCHA_SITE_KEY) {
+      toast.error("reCAPTCHA is not configured. Please contact support.");
+      return;
+    }
+
     try {
-      await createMessage.mutateAsync(values);
+      await createMessage.mutateAsync({ ...values, recaptchaToken: token });
       const message = contactType === "feedback" 
         ? "Thank you for your review! Your feedback has been recorded."
         : "Message sent successfully! Our team will reach out through your email as soon as possible.";
       toast.success(message);
       form.reset({ contactType: "enquiry", subject: "", rating: undefined });
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
       clearDraft();
     } catch {
       toast.error("Message could not be sent. Please try again.");
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
     }
   });
 
@@ -149,6 +169,19 @@ export default function ContactForm() {
             )}
           </label>
         </div>
+
+        {RECAPTCHA_SITE_KEY && (
+          <div style={{ margin: "20px 0" }}>
+            <RecaptchaWidget
+              ref={recaptchaRef}
+              siteKey={RECAPTCHA_SITE_KEY}
+              onChange={setRecaptchaToken}
+            />
+            {form.formState.errors.recaptchaToken && (
+              <span className="form-error">{form.formState.errors.recaptchaToken.message}</span>
+            )}
+          </div>
+        )}
 
         <Button className="submit-btn" type="submit" disabled={createMessage.isPending}>
           {createMessage.isPending ? <><Loader2 size={18} className="animate-spin" /> Sending…</> : "Send Message"}
