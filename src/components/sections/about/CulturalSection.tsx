@@ -5,7 +5,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
-import SectionLabel from "@/components/ui/SectionLabel";
 
 
 const CULTURAL_PILLARS = [
@@ -76,7 +75,6 @@ export default function CulturalSection() {
       <div className="container split-grid">
         {/* Text */}
         <div ref={textRef} style={{ opacity: 0 }}>
-          <SectionLabel>Inspired by Nepal</SectionLabel>
           <h2 style={{ margin: "16px 0 20px" }}>A Culture That Feeds the Soul</h2>
           <p style={{ marginBottom: "24px", lineHeight: 1.75 }}>
             Nepali hospitality is generous without being loud. It lives in the

@@ -6,7 +6,7 @@ import OffersSection from "@/components/sections/events/OffersSection";
 export default function EventsPage() {
   return (
     <main>
-      <ErrorBoundary><PageHero eyebrow="Events" title="Events & Offers" text="Celebrate with Us" /></ErrorBoundary>
+      <ErrorBoundary><PageHero eyebrow="Events" title="Events & Offers" text="Celebrate with Us" path={[{ label: "Events", href: "/events" }]} /></ErrorBoundary>
       <ErrorBoundary><EventsGrid /></ErrorBoundary>
       <ErrorBoundary><OffersSection /></ErrorBoundary>
     </main>

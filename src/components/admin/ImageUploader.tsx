@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { UploadCloud, Link, X, Loader2 } from "lucide-react";
+import { UploadCloud, X, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import OptimizedImage from "@/components/shared/OptimizedImage";
 
@@ -16,7 +16,6 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 export default function ImageUploader({ value, onChange, folder = "restaurant" }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [linkUrl, setLinkUrl] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = useCallback(async (file: File) => {
@@ -62,12 +61,6 @@ export default function ImageUploader({ value, onChange, folder = "restaurant" }
     const file = e.target.files?.[0];
     if (file) handleUpload(file);
   }, [handleUpload]);
-
-  const applyLink = useCallback(() => {
-    if (!linkUrl.trim()) return;
-    onChange(linkUrl.trim());
-    setLinkUrl("");
-  }, [linkUrl, onChange]);
 
   return (
     <div className="image-uploader" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -122,23 +115,6 @@ export default function ImageUploader({ value, onChange, folder = "restaurant" }
           )}
         </div>
       )}
-
-      <div style={{ display: "flex", gap: 8 }}>
-        <div style={{ position: "relative", flex: 1 }}>
-          <Link size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--a-text-3)" }} />
-          <input
-            className="admin-input"
-            type="text"
-            placeholder="Or paste image URL…"
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-            style={{ paddingLeft: 34, width: "100%" }}
-          />
-        </div>
-        <button type="button" className="admin-btn-sm" onClick={applyLink} disabled={!linkUrl.trim()}>
-          Use URL
-        </button>
-      </div>
     </div>
   );
 }

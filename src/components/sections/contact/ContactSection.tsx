@@ -52,7 +52,7 @@ export default function ContactSection() {
 
   return (
     <>
-      <PageHero eyebrow="Contact" title="Contact Us" text="We'd love to hear from you. Choose a topic below and we'll get back to you promptly." />
+      <PageHero eyebrow="Contact" title="Contact Us" text="We'd love to hear from you. Choose a topic below and we'll get back to you promptly." path={[{ label: "Contact", href: "/contact" }]} />
       <section className="section contact-section" ref={sectionRef}>
         <div className="container contact-layout">
           <div ref={detailsRef} style={{ opacity: 0 }}>

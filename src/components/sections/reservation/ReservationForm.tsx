@@ -8,6 +8,7 @@ import { z } from "zod";
 import { gsap } from "gsap";
 import { initGSAP } from "@/lib/gsap";
 import PageHero from "@/components/shared/PageHero";
+import type { BreadcrumbItem } from "@/components/shared/PageHero";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
@@ -195,7 +196,7 @@ export default function ReservationForm() {
   if (configLoading) {
     return (
       <main>
-        <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" />
+        <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
         <section className="section" style={{ display: "grid", placeItems: "center", minHeight: 300 }}>
           <Loader2 size={28} className="animate-spin" style={{ color: "var(--primary)" }} />
         </section>
@@ -206,7 +207,7 @@ export default function ReservationForm() {
   if (config && !config.acceptingReservations) {
     return (
       <main>
-        <PageHero eyebrow="Reservation" title="Reservations Closed" text="We look forward to welcoming you" />
+        <PageHero eyebrow="Reservation" title="Reservations Closed" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
         <section className="section" style={{ textAlign: "center", padding: "60px 24px" }}>
           <Card className="reservation-form" style={{ maxWidth: 500, margin: "0 auto" }}>
             <Clock size={32} style={{ color: "var(--primary)", marginBottom: 12 }} />
@@ -225,7 +226,7 @@ export default function ReservationForm() {
 
   return (
     <>
-      <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" />
+      <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
       <section className="section" ref={sectionRef}>
         <div className="container reservation-layout">
           <div ref={formCardRef} style={{ opacity: 0 }}>
@@ -400,7 +401,7 @@ export default function ReservationForm() {
 
               <div style={{
                 height: "1px",
-                background: "rgba(242,202,80,0.15)",
+                background: "var(--card-border)",
                 margin: "20px 0",
               }} />
 
@@ -418,8 +419,8 @@ export default function ReservationForm() {
                     alignItems: "center",
                     gap: "10px",
                     padding: "10px 14px",
-                    border: "1px solid rgba(242,202,80,0.20)",
-                    borderRadius: "8px",
+                    border: "1px solid var(--card-border)",
+                    borderRadius: "var(--radius-card)",
                     color: "var(--primary)",
                     fontWeight: 600,
                     fontSize: "14px",

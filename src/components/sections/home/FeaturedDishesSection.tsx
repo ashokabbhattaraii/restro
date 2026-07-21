@@ -8,7 +8,6 @@ import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import { useMenuItems } from "@/hooks/useApi";
 
 
@@ -89,7 +88,6 @@ export default function FeaturedDishesSection() {
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            label="Our Signatures"
             title="Crafted with Tradition"
             text="Six iconic dishes that tell the story of Nepal, India, and China — served with care at every table."
           />
@@ -111,17 +109,7 @@ export default function FeaturedDishesSection() {
                       whiteSpace: "nowrap",
                     }}>{dish.price}</span>
                   </div>
-                  <p style={{ margin: "8px 0 12px", fontSize: "14px" }}>{dish.description}</p>
-                  <div className="diet-row" style={{ marginBottom: "16px" }}>
-                    {dish.dietary.map((tag) => (
-                      <Badge key={tag}>{tag}</Badge>
-                    ))}
-                  </div>
-                  <div className="dish-footer">
-                    <Button href="/menu" variant="ghost" style={{ fontSize: "12px", padding: "10px 18px" }}>
-                      View Menu
-                    </Button>
-                  </div>
+                  <p style={{ margin: "8px 0 0", fontSize: "14px" }}>{dish.description}</p>
                 </div>
               </Card>
             </div>
@@ -130,7 +118,6 @@ export default function FeaturedDishesSection() {
 
         <div className="center-actions" style={{ marginTop: "48px" }}>
           <Button href="/menu">View Full Menu</Button>
-          <Button href="/reservation" variant="ghost">Reserve a Table</Button>
         </div>
       </div>
     </section>

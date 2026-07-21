@@ -95,7 +95,6 @@ export default function GalleryPreviewSection() {
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            label="Gallery"
             title="A Glimpse Inside"
             text="From mountain-inspired interiors to gold-lit plates — a visual taste of the experience."
           />

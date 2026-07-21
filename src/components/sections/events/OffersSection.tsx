@@ -61,7 +61,7 @@ export default function OffersSection() {
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            label="Current Offers"
+
             title="Special Offers"
             text="Exclusive deals and packages crafted to make every visit even more memorable."
           />

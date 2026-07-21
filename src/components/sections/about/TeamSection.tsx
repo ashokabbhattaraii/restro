@@ -38,29 +38,20 @@ export default function TeamSection() {
           gsap.to(cards, { opacity: 1, y: 0, scale: 1, duration: 0.45, stagger: 0.09, ease: "power3.out" });
         },
       });
-
-      (gridRef.current?.querySelectorAll(".team-photo") ?? []).forEach((photo) => {
-        const el = photo as HTMLElement;
-        el.addEventListener("mouseenter", () => {
-          gsap.to(el, { boxShadow: "0 0 30px rgba(242,202,80,0.35)", duration: 0.23 });
-        });
-        el.addEventListener("mouseleave", () => {
-          gsap.to(el, { boxShadow: "0 0 0 rgba(242,202,80,0)", duration: 0.29 });
-        });
-      });
     });
 
     return () => ctx.revert();
   }, [members]);
 
+  if (!members.length) return null;
+
   return (
-    <section className="section" id="team">
+    <section className="section muted-band" id="team">
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            label="Meet Our Team"
-            title="The People Behind the Experience"
-            text="A dedicated team of chefs, bartenders, and hosts who bring the Himalayan spirit to every service."
+            title="Our Team"
+            text="The people behind our success — a multicultural team of 13 dedicated professionals."
           />
         </div>
 
@@ -77,24 +68,10 @@ export default function TeamSection() {
                     sizes="120px"
                   />
                 </div>
-                <h3>{member.name}</h3>
-                <span>{member.role}</span>
-                <p style={{ marginTop: "10px", fontSize: "14px" }}>{member.bio}</p>
+                <h3>{member.role}</h3>
+                <p style={{ marginTop: "8px", fontSize: "13px", lineHeight: 1.5 }}>{member.bio}</p>
                 {member.department && (
-                  <div style={{
-                    marginTop: "14px",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    fontSize: "10px",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase" as const,
-                    color: "var(--primary)",
-                    border: "1px solid rgba(242,202,80,0.25)",
-                    borderRadius: "4px",
-                    padding: "4px 10px",
-                  }}>
+                  <div className="team-dept-badge">
                     {member.department}
                   </div>
                 )}

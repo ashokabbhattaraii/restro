@@ -7,8 +7,8 @@ export const restaurant = {
   location: "46001 As Sulaymaniyah, Iraq",
   phoneOne: "07701477472",
   phoneTwo: "07507752476",
-  hours: "Mon-Sun 11:00 AM - 11:00 PM",
-  cuisine: "Nepali · Chinese · Indian Cuisine & Premium Bar",
+  hours: "Mon-Sun 9:00 AM - 1:00 AM",
+  cuisine: "Nepali · Indian · Chinese · Japanese Cuisine & Premium Bar",
 };
 
 export type NavChild = { href: string; label: string; description?: string };
@@ -33,6 +33,7 @@ export const navLinks: NavLink[] = [
     label: "About",
     children: [
       { href: "/about#story", label: "Our Story", description: "A Himalayan journey since 2018" },
+      { href: "/about#founder", label: "Founder", description: "Meet Arjun Tamang, our founder" },
       { href: "/about#mission", label: "Mission & Vision", description: "What drives our kitchen" },
       { href: "/about#team", label: "Meet the Team", description: "The people behind the experience" },
     ],
@@ -63,6 +64,7 @@ export const menuCategories = [
   "Nepali",
   "Indian",
   "Chinese",
+  "Japanese",
   "BBQ & Grill",
   "Drinks & Bar",
   "Desserts",
@@ -388,41 +390,51 @@ export const events: EventItem[] = [
 
 export const staff: StaffMember[] = [
   {
-    id: "aarav",
-    name: "Aarav Gurung",
-    role: "Head Chef",
+    id: "head-chef",
+    name: "Head Chef",
+    role: "Head Chef (Nepali)",
     department: "Kitchen",
-    bio: "Leads the kitchen with Himalayan technique and quiet precision.",
+    bio: "Expert in Nepali & Asian Cuisine. Leads the kitchen with authentic Himalayan technique.",
     image:
       "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=700&q=85",
     visible: true,
   },
   {
-    id: "meera",
-    name: "Meera Thapa",
-    role: "Sous Chef",
+    id: "chef-2",
+    name: "Chef",
+    role: "Chef (Nepali)",
     department: "Kitchen",
-    bio: "Shapes the momo, curries, and daily specials with care.",
+    bio: "Specialist in Indian & Chinese dishes. Brings depth and precision to every plate.",
     image:
       "https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?auto=format&fit=crop&w=700&q=85",
     visible: true,
   },
   {
-    id: "rohit",
-    name: "Rohit Singh",
-    role: "Bar Manager",
-    department: "Bar",
-    bio: "Builds elegant cocktails around spice, citrus, and gold-rimmed details.",
+    id: "hookah-expert",
+    name: "Hookah Expert",
+    role: "Hookah Expert (Syrian)",
+    department: "Service",
+    bio: "Professional hookah specialist bringing authentic preparation and premium service.",
+    image:
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=700&q=85",
+    visible: true,
+  },
+  {
+    id: "interpreters",
+    name: "Interpreters",
+    role: "Interpreters",
+    department: "Service",
+    bio: "Arabic, Kurdish, and English speakers supporting communication with guests and suppliers.",
     image:
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=700&q=85",
     visible: true,
   },
   {
-    id: "nadia",
-    name: "Nadia Karim",
-    role: "Front of House Manager",
-    department: "Service",
-    bio: "Keeps every table moving with warmth and polished timing.",
+    id: "security",
+    name: "Security Team",
+    role: "Security",
+    department: "Operations",
+    bio: "Ensuring safety and comfort for all guests, 24/7. Additional personnel on Fridays and holidays.",
     image:
       "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=700&q=85",
     visible: true,

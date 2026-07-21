@@ -136,9 +136,9 @@ export default function Navbar() {
         onMouseLeave={() => setOpenMenu(null)}
       >
         <div className="container nav-inner">
-          <Link className="brand flex items-center gap-3" href="/">
-            <img src="/logo.png" alt={`${restaurant.name} Logo`} className="h-10 w-auto rounded-full object-contain filter drop-shadow-[0_0_8px_rgba(179,137,29,0.25)]" />
-            <span className="font-display tracking-tight text-xl md:text-2xl">{restaurant.name}</span>
+          <Link className="brand" href="/">
+            <img src="/logo.png" alt={`${restaurant.name} Logo`} className="nav-logo" />
+            <span>{restaurant.name}</span>
           </Link>
 
           <nav className="nav-links desktop-nav" aria-label="Primary">
@@ -217,9 +217,9 @@ export default function Navbar() {
 
         <aside className="mobile-nav-sidebar">
           <div className="mobile-nav-header">
-            <Link className="brand flex items-center gap-2" href="/" onClick={() => setOpen(false)}>
-              <img src="/logo.png" alt={`${restaurant.name} Logo`} className="h-9 w-auto rounded-full object-contain filter drop-shadow-[0_0_6px_rgba(179,137,29,0.25)]" />
-              <span className="font-display tracking-tight text-lg">{restaurant.monogram}</span>
+            <Link className="brand" href="/" onClick={() => setOpen(false)}>
+              <img src="/logo.png" alt={`${restaurant.name} Logo`} className="nav-logo" />
+              <span>{restaurant.monogram}</span>
             </Link>
             <button aria-label="Close menu" className="menu-close-btn" onClick={() => setOpen(false)}>
               <X size={20} />

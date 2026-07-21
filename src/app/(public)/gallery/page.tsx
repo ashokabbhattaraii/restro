@@ -5,7 +5,7 @@ import MasonryGrid from "@/components/sections/gallery/MasonryGrid";
 export default function GalleryPage() {
   return (
     <main>
-      <ErrorBoundary><PageHero eyebrow="Gallery" title="Gallery" text="A Visual Journey" /></ErrorBoundary>
+      <ErrorBoundary><PageHero eyebrow="Gallery" title="Gallery" text="A Visual Journey" path={[{ label: "Gallery", href: "/gallery" }]} /></ErrorBoundary>
       <ErrorBoundary><MasonryGrid /></ErrorBoundary>
     </main>
   );

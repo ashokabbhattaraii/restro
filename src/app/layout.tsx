@@ -20,7 +20,7 @@ const body = Inter({
 export const metadata: Metadata = {
   title: "Nepali Restaurant & Bar | Sulaymaniyah",
   description:
-    "Ultra-premium Nepali, Chinese, Indian cuisine and bar in As Sulaymaniyah, Iraq.",
+    "Ultra-premium Nepali, Indian, Chinese, and Japanese cuisine and bar in As Sulaymaniyah, Iraq.",
 };
 
 const themeScript = `try{var t=localStorage.getItem("restaurant-theme"),m=window.matchMedia("(prefers-color-scheme:dark)");document.documentElement.dataset.theme=t||(m.matches?"dark":"light")}catch(e){document.documentElement.dataset.theme="light"}`;

@@ -7,23 +7,10 @@ import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 import { Calendar, Clock, MapPin } from "lucide-react";
-
-const EVENT_TYPES: Record<string, { label: string; color: string }> = {
-  "Live Music": { label: "Live Music", color: "#d4a017" },
-  "Happy Hour": { label: "Happy Hour", color: "#c0392b" },
-  "Festival": { label: "Festival", color: "#8e44ad" },
-  "Special": { label: "Special", color: "#16a085" },
-};
-
-function typeColor(type?: string): string {
-  if (!type) return "var(--primary)";
-  return EVENT_TYPES[type]?.color || "var(--primary)";
-}
 
 export default function EventsGrid() {
   initGSAP();
@@ -80,7 +67,6 @@ export default function EventsGrid() {
         <div className="container" style={{ textAlign: "center", padding: "60px 24px" }}>
           <SectionHeader
             title="Upcoming Events"
-            label="Events"
             text="Live music, cultural evenings, and special occasions — every week at our table."
           />
           <p style={{ color: "var(--muted)", marginTop: 32 }}>No upcoming events at this time. Check back soon!</p>
@@ -95,7 +81,6 @@ export default function EventsGrid() {
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
             title="Upcoming Events"
-            label="Events"
             text="Live music, cultural evenings, and special occasions — every week at our table."
             align="left"
           />
@@ -118,18 +103,6 @@ export default function EventsGrid() {
                 }} />
               </div>
               <div style={{ padding: "36px 32px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "12px" }}>
-                {featured.type && (
-                  <span style={{
-                    display: "inline-flex", alignSelf: "flex-start",
-                    padding: "4px 12px", borderRadius: "4px",
-                    fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                    background: typeColor(featured.type),
-                    color: "#fff",
-                  }}>
-                    {featured.type}
-                  </span>
-                )}
                 <h2 style={{ margin: "4px 0 0", fontSize: "clamp(28px, 3.5vw, 42px)", lineHeight: 1.1 }}>{featured.title}</h2>
                 <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", fontSize: "14px", color: "var(--muted)" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -168,18 +141,6 @@ export default function EventsGrid() {
                       position: "absolute", inset: 0,
                       background: "linear-gradient(to top, rgba(9,10,10,0.85) 0%, transparent 50%)",
                     }} />
-                    {event.type && (
-                      <span style={{
-                        position: "absolute", top: 12, left: 12, zIndex: 2,
-                        display: "inline-flex", padding: "3px 10px", borderRadius: "4px",
-                        fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
-                        textTransform: "uppercase",
-                        background: typeColor(event.type),
-                        color: "#fff",
-                      }}>
-                        {event.type}
-                      </span>
-                    )}
                   </div>
                   <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "8px", flex: 1 }}>
                     <h3 style={{ fontSize: "20px", fontWeight: 700, margin: 0, lineHeight: 1.2 }}>{event.title}</h3>

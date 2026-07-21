@@ -63,10 +63,10 @@ export default function OwnerMessageSection() {
         </div>
 
         <span className="owner-name" ref={nameRef} style={{ opacity: 0 }}>
-          Sangita Family Kitchen
+          Arjun Tamang
         </span>
         <p className="owner-title" ref={titleRef} style={{ opacity: 0 }}>
-          Founder · Est. 2018
+          Founder &amp; Owner
         </p>
 
         {/* Gold bar */}
@@ -83,11 +83,9 @@ export default function OwnerMessageSection() {
         />
 
         <blockquote ref={quoteRef} style={{ opacity: 0 }}>
-          Welcome to our family. Every dish we serve carries the heart of Nepal —
-          the patience of slow spices, the comfort of shared rice, and the joy of
-          seeing guests return again and again. When you dine with us, you are not
-          just a customer; you are a guest in our home, and every plate is prepared
-          with that intention.
+          Food connects cultures, and hospitality creates lasting memories. Every
+          dish we serve carries the heart of Nepal to Iraq — built with patience,
+          pride, and the joy of bringing people together around one table.
         </blockquote>
       </div>
     </section>

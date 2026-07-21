@@ -5,7 +5,6 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initGSAP } from "@/lib/gsap";
 import Button from "@/components/ui/Button";
-import SectionLabel from "@/components/ui/SectionLabel";
 import CounterUp from "@/components/shared/CounterUp";
 import { images, restaurant } from "@/lib/constants";
 import { useConfig } from "@/hooks/useConfig";
@@ -30,7 +29,6 @@ const SLIDE_IMAGES = [
 export default function HeroSection() {
   initGSAP();
   const { config } = useConfig();
-  const locationLabel = config.location.split(",").map((s) => s.trim()).join(", ").toUpperCase() || "SULAYMANIYAH, IRAQ";
   const labelRef = useRef<HTMLDivElement>(null);
   const linesRef = useRef<(HTMLSpanElement | null)[]>([]);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
@@ -188,7 +186,6 @@ export default function HeroSection() {
               className="h-24 w-auto object-contain"
             />
           </span>
-          <SectionLabel>EST. {restaurant.established} · {locationLabel}</SectionLabel>
         </div>
 
         <h1 style={{ perspective: "800px" }}>

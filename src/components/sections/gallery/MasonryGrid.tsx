@@ -8,7 +8,6 @@ import { initGSAP } from "@/lib/gsap";
 import GalleryFilter from "@/components/sections/gallery/GalleryFilter";
 import Lightbox from "@/components/shared/Lightbox";
 import Image from "next/image";
-import Badge from "@/components/ui/Badge";
 import { slugify } from "@/lib/utils";
 import { useGalleryImages } from "@/hooks/useApi";
 import { useConfig } from "@/hooks/useConfig";
@@ -99,7 +98,6 @@ export default function MasonryGrid() {
                 style={{ objectFit: "cover" }}
                 sizes="(max-width: 768px) 100vw, 33vw"
               />
-              <Badge>{item.category}</Badge>
               <strong>{item.title}</strong>
               <span className="zoom-mark" aria-hidden="true"><Search size={22} /></span>
             </button>

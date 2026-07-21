@@ -7,7 +7,6 @@ import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import { useEvents } from "@/hooks/useApi";
 import type { EventItem } from "@/types";
 
@@ -44,12 +43,10 @@ function EventPosterCard({ event, index }: { event: EventItem; index: number }) 
       }} />
 
       <div style={{ position: "relative", zIndex: 2, padding: "24px 28px 28px" }}>
-        <Badge style={{ marginBottom: "10px" }}>{event.date}</Badge>
         {event.type && (
           <div style={{
             display: "inline-block",
             marginBottom: "8px",
-            marginLeft: "8px",
             fontSize: "10px",
             fontWeight: 700,
             letterSpacing: "0.12em",
@@ -143,7 +140,6 @@ export default function EventsPreviewSection() {
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            label="Upcoming Events"
             title="Evenings to Remember"
             text="Live music, cultural celebrations, and curated dining experiences — every week."
           />

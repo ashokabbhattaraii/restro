@@ -5,7 +5,7 @@ function generateId(): string {
   return crypto.randomUUID().slice(0, 8);
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const start = Date.now();
   const requestId = generateId();
   const { pathname, search } = request.nextUrl;

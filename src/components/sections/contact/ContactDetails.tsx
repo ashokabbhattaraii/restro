@@ -84,9 +84,9 @@ export default function ContactDetails() {
       <div style={{
         marginTop: "24px",
         padding: "16px",
-        border: "1px solid rgba(242,202,80,0.15)",
-        borderRadius: "8px",
-        background: "rgba(242,202,80,0.04)",
+        border: "1px solid var(--card-border)",
+        borderRadius: "var(--radius-card)",
+        background: "var(--surface)",
       }}>
         <p style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--primary)", margin: "0 0 6px" }}>
           Opening Hours

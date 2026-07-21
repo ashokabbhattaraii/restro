@@ -7,8 +7,20 @@ export const api = axios.create({
 });
 
 api.interceptors.response.use(
-  (response) => response,
-  (error) => Promise.reject(error)
+  (response) => {
+    if (response.data && typeof response.data === 'object' && 'success' in response.data) {
+      if (response.data.success === true) {
+        response.data = response.data.data;
+      } else {
+        return Promise.reject(new Error(response.data.error || 'Request failed'));
+      }
+    }
+    return response;
+  },
+  (error) => {
+    const message = error.response?.data?.error || error.message || 'Request failed';
+    return Promise.reject(new Error(message));
+  }
 );
 
 export async function fetcher<T>(url: string): Promise<T> {

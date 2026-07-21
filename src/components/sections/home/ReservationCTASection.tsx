@@ -98,12 +98,9 @@ export default function ReservationCTASection() {
           <Button href="/reservation">Make a Reservation</Button>
         </div>
 
-        <div ref={phoneRef} style={{ opacity: 0, display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" as const, justifyContent: "center" }}>
-          <span style={{ fontSize: "13px", color: "var(--muted)", letterSpacing: "0.06em" }}>Or call us directly:</span>
-          <strong style={{ color: "var(--primary)", fontFamily: "var(--font-display), Georgia, serif", fontSize: "16px", letterSpacing: "0.04em" }}>
-            📞 {config.phoneOne} · {config.phoneTwo}
-          </strong>
-        </div>
+        <p ref={phoneRef} className="info-strip" style={{ opacity: 0 }}>
+          📞 Or call us: <strong>{config.phoneOne}</strong> · <strong>{config.phoneTwo}</strong>
+        </p>
       </div>
     </section>
   );

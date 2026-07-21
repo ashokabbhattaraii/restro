@@ -101,7 +101,7 @@ export default function Footer() {
           </Link>
           <p style={{ lineHeight: 1.7, maxWidth: "260px", fontSize: "14px" }}>
             Himalayan hospitality, refined interiors, and a menu shaped by Nepal,
-            India, and China — in the heart of Sulaymaniyah.
+            India, China, and Japan — in the heart of Sulaymaniyah.
           </p>
 
           <div style={{

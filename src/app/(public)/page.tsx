@@ -6,14 +6,12 @@ import HeroSection from "@/components/sections/home/HeroSection";
 import IntroSection from "@/components/sections/home/IntroSection";
 import ReservationCTASection from "@/components/sections/home/ReservationCTASection";
 import TestimonialsSection from "@/components/sections/home/TestimonialsSection";
-import Divider from "@/components/ui/Divider";
 
 export default function HomePage() {
   return (
     <main>
       <ErrorBoundary><HeroSection /></ErrorBoundary>
       <ErrorBoundary><IntroSection /></ErrorBoundary>
-      <Divider />
       <ErrorBoundary><FeaturedDishesSection /></ErrorBoundary>
       <ErrorBoundary><ReservationCTASection /></ErrorBoundary>
       <ErrorBoundary><EventsPreviewSection /></ErrorBoundary>

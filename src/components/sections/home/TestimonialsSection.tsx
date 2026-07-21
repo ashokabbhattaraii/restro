@@ -5,9 +5,9 @@ import { gsap } from "gsap";
 import { initGSAP } from "@/lib/gsap";
 import { Star } from "lucide-react";
 import SectionHeader from "@/components/shared/SectionHeader";
-import { testimonials, type Testimonial } from "@/lib/constants";
 import { useVerifiedFeedback } from "@/hooks/useApi";
 import type { VerifiedFeedback } from "@/types";
+import type { Testimonial } from "@/lib/constants";
 
 function Stars({ rating, size = 15 }: { rating: number; size?: number }) {
   return (
@@ -44,12 +44,7 @@ function QuoteCard({ item }: { item: Testimonial & { verified?: boolean } }) {
 
 function calculateRatingSummary(feedback: VerifiedFeedback[]): { average: number; count: number } {
   const valid = feedback.filter((f) => Number.isFinite(f.rating) && f.rating > 0);
-  if (valid.length === 0) {
-    // No real ratings yet — fall back to the curated testimonials' average
-    const seed = testimonials.filter((t) => Number.isFinite(t.rating) && t.rating > 0);
-    const seedAvg = seed.length ? seed.reduce((a, t) => a + t.rating, 0) / seed.length : 5;
-    return { average: seedAvg, count: 0 };
-  }
+  if (valid.length === 0) return { average: 0, count: 0 };
   const sum = valid.reduce((acc, f) => acc + f.rating, 0);
   return { average: sum / valid.length, count: valid.length };
 }
@@ -64,14 +59,13 @@ export default function TestimonialsSection() {
   // Derived value — no state/effect needed. API verified feedback first, then
   // the curated testimonials. Recomputed only when the query data changes.
   const displayFeedback = useMemo<Testimonial[]>(() => {
-    const apiTestimonials: Testimonial[] = verifiedFeedback.map((f) => ({
+    return verifiedFeedback.map((f) => ({
       quote: f.quote,
       name: f.name,
       location: f.location || "Guest",
       rating: f.rating,
       verified: true,
     }));
-    return [...apiTestimonials, ...testimonials];
   }, [verifiedFeedback]);
 
   useEffect(() => {
@@ -121,7 +115,6 @@ export default function TestimonialsSection() {
     <section className="section testimonial-section motif">
       <div className="container">
         <SectionHeader
-          label="Guest Reviews"
           title="What Our Guests Say"
           text="A few words from the tables we've had the pleasure of serving."
         />
@@ -131,7 +124,9 @@ export default function TestimonialsSection() {
           <div className="rating-summary-meta">
             <Stars rating={5} size={18} />
             <span>
-              Rated <strong>{ratingSummary.average.toFixed(1)}/5</strong> by {ratingSummary.count + testimonials.length}+ happy guests
+              {ratingSummary.count > 0
+                ? `Rated ${ratingSummary.average.toFixed(1)}/5 by ${ratingSummary.count}+ happy guests`
+                : "Be the first to leave a review"}
             </span>
           </div>
         </div>

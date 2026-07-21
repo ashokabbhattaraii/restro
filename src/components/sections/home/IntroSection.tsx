@@ -7,7 +7,6 @@ import { initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
-import SectionLabel from "@/components/ui/SectionLabel";
 import { images } from "@/lib/constants";
 
 
@@ -20,7 +19,6 @@ const HIGHLIGHTS = [
 export default function IntroSection() {
   initGSAP();
   const sectionRef = useRef<HTMLElement>(null);
-  const labelRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const bodyRef = useRef<HTMLParagraphElement>(null);
   const highlightsRef = useRef<HTMLDivElement>(null);
@@ -42,7 +40,6 @@ export default function IntroSection() {
       });
 
       tl.fromTo(sideLineRef.current, { scaleY: 0, transformOrigin: "top" }, { scaleY: 1, duration: 0.45 })
-        .fromTo(labelRef.current, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.42 }, "-=0.4")
         .fromTo(headingRef.current, { opacity: 0, y: 40, filter: "blur(6px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.52 }, "-=0.4")
         .fromTo(bodyRef.current, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.42 }, "-=0.5")
         .fromTo(
@@ -77,18 +74,15 @@ export default function IntroSection() {
         {/* Left: text */}
         <Card className="story-card" style={{ position: "relative", overflow: "visible" }}>
           <span className="side-line" ref={sideLineRef} style={{ transform: "scaleY(0)", transformOrigin: "top" }} />
-          <div ref={labelRef} style={{ opacity: 0 }}>
-            <SectionLabel>Our Story</SectionLabel>
-          </div>
           <h2 ref={headingRef} style={{ opacity: 0 }}>
             Where Himalayan Warmth Meets Refined Dining
           </h2>
           <p ref={bodyRef} style={{ opacity: 0 }}>
             Nestled in the heart of As Sulaymaniyah, Nepali Restaurant & Bar
-            brings the rich flavors of Nepal, India, and China together in one
-            extraordinary dining destination. Since 2018, we have been serving
-            our guests authentic cuisine, crafted with tradition and love —
-            every plate a story from the mountains.
+            brings the rich flavors of Nepal, India, China, and Japan together
+            in one extraordinary dining destination. Since 2018, we have been
+            serving our guests authentic cuisine, crafted with tradition and
+            love — every plate a story from the mountains.
           </p>
 
           <div ref={highlightsRef} style={{ display: "flex", flexDirection: "column", gap: "12px", margin: "24px 0" }}>

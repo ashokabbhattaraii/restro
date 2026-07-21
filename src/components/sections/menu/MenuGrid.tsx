@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initGSAP } from "@/lib/gsap";
 import Image from "next/image";
 import CategoryTabs from "@/components/sections/menu/CategoryTabs";
-import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { slugify } from "@/lib/utils";
 import { useMenuItems } from "@/hooks/useApi";
@@ -33,11 +32,6 @@ function MenuItemCard({ item }: { item: MenuItem }) {
           <strong>{item.price}</strong>
         </div>
         <p style={{ fontSize: "13px", margin: "6px 0 10px", lineHeight: 1.5 }}>{item.description}</p>
-        <div className="diet-row">
-          {item.dietary.map((chip) => (
-            <Badge key={chip}>{chip}</Badge>
-          ))}
-        </div>
       </div>
     </Card>
   );
@@ -113,7 +107,6 @@ export default function MenuGrid() {
             <section className="menu-category" key={category} id={slugify(category)}>
               <div className="menu-category-head">
                 <div>
-                  <span className="menu-category-eyebrow">Our Selection</span>
                   <h2>{category}</h2>
                 </div>
                 <span className="menu-count">{items.length} {items.length === 1 ? "dish" : "dishes"}</span>
