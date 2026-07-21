@@ -1,0 +1,51 @@
+export type DayHours = {
+  open: string;
+  close: string;
+  closed: boolean;
+};
+
+export type RestaurantConfig = {
+  acceptingReservations: boolean;
+  maxGuests: number;
+  maxDaysAhead: number;
+  slotIntervalMinutes: number;
+  hours: Record<string, DayHours>;
+  closedDates: string[];
+  phoneOne: string;
+  phoneTwo: string;
+  location: string;
+  message: string;
+  socialInstagram: string;
+  socialFacebook: string;
+  showOffers: boolean;
+  eventTypes: string[];
+  menuCategories: string[];
+  galleryCategories: string[];
+};
+
+export const DEFAULT_CONFIG: RestaurantConfig = {
+  acceptingReservations: true,
+  maxGuests: 20,
+  maxDaysAhead: 30,
+  slotIntervalMinutes: 30,
+  hours: {
+    Monday: { open: "09:00", close: "01:00", closed: false },
+    Tuesday: { open: "09:00", close: "01:00", closed: false },
+    Wednesday: { open: "09:00", close: "01:00", closed: false },
+    Thursday: { open: "09:00", close: "01:00", closed: false },
+    Friday: { open: "09:00", close: "01:00", closed: false },
+    Saturday: { open: "09:00", close: "01:00", closed: false },
+    Sunday: { open: "09:00", close: "01:00", closed: false },
+  },
+  closedDates: [],
+  phoneOne: "07701477472",
+  phoneTwo: "07507752476",
+  location: "46001 As Sulaymaniyah, Iraq",
+  message: "",
+  socialInstagram: "@nepali.restaurant.bar",
+  socialFacebook: "Nepali Restaurant & Bar",
+  showOffers: true,
+  eventTypes: ["Live Music", "Happy Hour", "Festival", "Special", "Cultural", "Dinner"],
+  menuCategories: ["All", "Nepali", "Indian", "Chinese", "Japanese", "BBQ & Grill", "Drinks & Bar", "Desserts"],
+  galleryCategories: ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"],
+};

@@ -1,0 +1,440 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import { z } from "zod";
+import { gsap } from "gsap";
+import { initGSAP } from "@/lib/gsap";
+import PageHero from "@/components/shared/PageHero";
+import type { BreadcrumbItem } from "@/components/shared/PageHero";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
+import Textarea from "@/components/ui/Textarea";
+import RecaptchaWidget, { type RecaptchaWidgetRef } from "@/components/ui/RecaptchaWidget";
+import { restaurant } from "@/lib/constants";
+import { reservationSchema } from "@/lib/validations";
+import { useCreateReservation } from "@/hooks/useApi";
+import { useFormDraft } from "@/hooks/useFormDraft";
+import type { RestaurantConfig } from "@/lib/config";
+import { useConfig } from "@/hooks/useConfig";
+import { Loader2, Clock } from "lucide-react";
+
+const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+
+
+const occasions = ["Birthday", "Anniversary", "Business", "Date Night", "Other"];
+const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function generateTimeSlots(config: RestaurantConfig, dateStr?: string): string[] {
+  if (!dateStr) return [];
+  const date = new Date(dateStr + "T12:00:00");
+  const dayName = DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1];
+  const dayHours = config.hours[dayName];
+  if (!dayHours || dayHours.closed) return [];
+
+  const [openH, openM] = dayHours.open.split(":").map(Number);
+  const [closeH, closeM] = dayHours.close.split(":").map(Number);
+  const openMinutes = openH * 60 + openM;
+  const closeMinutes = closeH * 60 + closeM;
+  const interval = config.slotIntervalMinutes || 30;
+
+  const slots: string[] = [];
+  for (let m = openMinutes; m < closeMinutes; m += interval) {
+    const h24 = Math.floor(m / 60);
+    const min = m % 60;
+    const suffix = h24 >= 12 ? "PM" : "AM";
+    const h12 = h24 > 12 ? h24 - 12 : h24;
+    slots.push(`${h12}:${min.toString().padStart(2, "0")} ${suffix}`);
+  }
+  return slots;
+}
+
+function getDayStatus(dateStr: string, config: RestaurantConfig): "open" | "closed" | "past" {
+  const date = new Date(dateStr + "T12:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  if (date < today) return "past";
+
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() + config.maxDaysAhead);
+  if (date > cutoff) return "past";
+
+  const dayName = DAYS[date.getDay() === 0 ? 6 : date.getDay() - 1];
+  const dayHours = config.hours[dayName];
+  if (!dayHours || dayHours.closed) return "closed";
+
+  const dateStrOnly = dateStr.slice(0, 10);
+  if (config.closedDates?.includes(dateStrOnly)) return "closed";
+
+  return "open";
+}
+
+type ReservationFormInput = z.input<typeof reservationSchema>;
+type ReservationFormOutput = z.output<typeof reservationSchema>;
+
+export default function ReservationForm() {
+  initGSAP();
+  const [occasion, setOccasion] = useState("Birthday");
+  // Shared, cached config (single request across the app) — no per-component fetch.
+  const { config, loading: configLoading } = useConfig();
+  const formCardRef = useRef<HTMLDivElement>(null);
+  const hoursCardRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const recaptchaRef = useRef<RecaptchaWidgetRef>(null);
+  const createReservation = useCreateReservation();
+
+  const form = useForm<ReservationFormInput, unknown, ReservationFormOutput>({
+    resolver: zodResolver(reservationSchema),
+    mode: "onTouched",
+    defaultValues: { guests: 2, occasion, name: "", phone: "", email: "", date: "", time: "", requests: "" },
+  });
+  const {
+    register,
+    formState: { errors },
+  } = form;
+
+  const { clearDraft } = useFormDraft(form, "reservation");
+
+  useEffect(() => {
+    const sub = form.watch((values) => {
+      localStorage.setItem("form-draft:reservation", JSON.stringify(values));
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
+  useEffect(() => {
+    if (configLoading) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        formCardRef.current,
+        { opacity: 0, x: -60, scale: 0.96 },
+        {
+          opacity: 1, x: 0, scale: 1, duration: 0.62, ease: "power3.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
+        }
+      );
+
+      gsap.fromTo(
+        hoursCardRef.current,
+        { opacity: 0, x: 60, scale: 0.96 },
+        {
+          opacity: 1, x: 0, scale: 1, duration: 0.62, ease: "power3.out", delay: 0.12,
+          scrollTrigger: { trigger: sectionRef.current, start: "top 80%", once: true },
+        }
+      );
+
+      const labels = formCardRef.current?.querySelectorAll("label, .occasion-field, .info-strip") ?? [];
+      gsap.fromTo(
+        labels,
+        { opacity: 0, y: 16 },
+        {
+          opacity: 1, y: 0, duration: 0.33, stagger: 0.05,
+          scrollTrigger: { trigger: formCardRef.current, start: "top 75%", once: true },
+          delay: 0.3,
+        }
+      );
+
+      const rows = hoursCardRef.current?.querySelectorAll("li") ?? [];
+      gsap.fromTo(
+        rows,
+        { opacity: 0, x: 20 },
+        {
+          opacity: 1, x: 0, duration: 0.29, stagger: 0.05,
+          scrollTrigger: { trigger: hoursCardRef.current, start: "top 80%", once: true },
+          delay: 0.4,
+        }
+      );
+    });
+
+    return () => ctx.revert();
+  }, [configLoading]);
+
+  // Derived directly from the watched field — no mirror state/effect needed.
+  const selectedDate = form.watch("date") || "";
+
+  const times = config ? generateTimeSlots(config, selectedDate) : [];
+  const dayStatus = config && selectedDate ? getDayStatus(selectedDate, config) : "open";
+  const maxGuests = config?.maxGuests || 20;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const maxDate = config ? (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + config.maxDaysAhead);
+    return d.toISOString().slice(0, 10);
+  })() : "";
+
+  const submit = form.handleSubmit(async (values) => {
+    if (config && !config.acceptingReservations) {
+      toast.error("We are currently not accepting reservations.");
+      return;
+    }
+    const token = recaptchaRef.current?.getValue();
+    if (!token) {
+      toast.error("Please complete the reCAPTCHA verification.");
+      return;
+    }
+    if (!RECAPTCHA_SITE_KEY) {
+      toast.error("reCAPTCHA is not configured. Please contact support.");
+      return;
+    }
+    try {
+      await createReservation.mutateAsync({ ...values, occasion, recaptchaToken: token });
+      toast.success("Reservation request received! We'll confirm shortly.");
+      form.reset();
+      recaptchaRef.current?.reset();
+      clearDraft();
+    } catch {
+      toast.error("Reservation could not be sent.");
+      recaptchaRef.current?.reset();
+    }
+  });
+
+  if (configLoading) {
+    return (
+      <main>
+        <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
+        <section className="section" style={{ display: "grid", placeItems: "center", minHeight: 300 }}>
+          <Loader2 size={28} className="animate-spin" style={{ color: "var(--primary)" }} />
+        </section>
+      </main>
+    );
+  }
+
+  if (config && !config.acceptingReservations) {
+    return (
+      <main>
+        <PageHero eyebrow="Reservation" title="Reservations Closed" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
+        <section className="section" style={{ textAlign: "center", padding: "60px 24px" }}>
+          <Card className="reservation-form" style={{ maxWidth: 500, margin: "0 auto" }}>
+            <Clock size={32} style={{ color: "var(--primary)", marginBottom: 12 }} />
+            <h2 style={{ margin: "0 0 8px" }}>Not Accepting Bookings</h2>
+            <p style={{ color: "var(--muted)", lineHeight: 1.6 }}>
+              {config.message || "We are currently not accepting online reservations. Please call us to book a table."}
+            </p>
+            <div style={{ marginTop: 16 }}>
+              <Button href={`tel:${config.phoneOne}`}>Call {config.phoneOne}</Button>
+            </div>
+          </Card>
+        </section>
+      </main>
+    );
+  }
+
+  return (
+    <>
+      <PageHero eyebrow="Reservation" title="Reserve a Table" text="We look forward to welcoming you" path={[{ label: "Reservation", href: "/reservation" }]} />
+      <section className="section" ref={sectionRef}>
+        <div className="container reservation-layout">
+          <div ref={formCardRef} style={{ opacity: 0 }}>
+            <Card className="reservation-form">
+              <form onSubmit={submit}>
+                <div style={{ marginBottom: "28px" }}>
+                  <div style={{
+                    width: "40px", height: "3px",
+                    background: "linear-gradient(90deg, var(--primary), transparent)",
+                    marginBottom: "12px", borderRadius: "2px",
+                  }} />
+                  <h2 style={{ margin: 0 }}>Reservation Details</h2>
+                  <p style={{ marginTop: "6px", fontSize: "14px" }}>
+                    Fill in the details below and we&apos;ll confirm your table.
+                  </p>
+                </div>
+
+                <div className="form-grid">
+                  <label className={`form-field ${errors.name ? "has-error" : ""}`}>
+                    <span>Full Name</span>
+                    <Input
+                      {...register("name")}
+                      placeholder="Your full name"
+                      aria-invalid={!!errors.name}
+                      className={errors.name ? "field-error" : ""}
+                    />
+                    {errors.name && <span className="form-error">{errors.name.message}</span>}
+                  </label>
+                  <label className={`form-field ${errors.phone ? "has-error" : ""}`}>
+                    <span>Phone Number</span>
+                    <Input
+                      {...register("phone")}
+                      type="tel"
+                      placeholder="+964 xxx xxx xxxx"
+                      aria-invalid={!!errors.phone}
+                      className={errors.phone ? "field-error" : ""}
+                    />
+                    {errors.phone && <span className="form-error">{errors.phone.message}</span>}
+                  </label>
+                  <label className={`form-field ${errors.email ? "has-error" : ""}`}>
+                    <span>Email Address</span>
+                    <Input
+                      {...register("email")}
+                      type="email"
+                      placeholder="you@example.com"
+                      aria-invalid={!!errors.email}
+                      className={errors.email ? "field-error" : ""}
+                    />
+                    {errors.email && <span className="form-error">{errors.email.message}</span>}
+                  </label>
+                  <label className={`form-field ${errors.date ? "has-error" : ""}`}>
+                    <span>Date</span>
+                    <Input
+                      {...register("date")}
+                      type="date"
+                      min={todayStr}
+                      max={maxDate}
+                      aria-invalid={!!errors.date}
+                      className={errors.date ? "field-error" : ""}
+                    />
+                    {errors.date && <span className="form-error">{errors.date.message}</span>}
+                  </label>
+                  <label className={`form-field ${errors.time ? "has-error" : ""}`}>
+                    <span>Time</span>
+                    <Select
+                      {...register("time")}
+                      aria-invalid={!!errors.time}
+                      className={errors.time ? "field-error" : ""}
+                    >
+                      {!selectedDate ? (
+                        <option value="">Select a date first</option>
+                      ) : dayStatus === "closed" ? (
+                        <option value="">Closed on this day</option>
+                      ) : times.length === 0 ? (
+                        <option value="">No available slots</option>
+                      ) : (
+                        times.map((time) => <option key={time}>{time}</option>)
+                      )}
+                    </Select>
+                    {errors.time && <span className="form-error">{errors.time.message}</span>}
+                  </label>
+                  <label className={`form-field ${errors.guests ? "has-error" : ""}`}>
+                    <span>Number of Guests</span>
+                    <Select
+                      {...register("guests")}
+                      aria-invalid={!!errors.guests}
+                      className={errors.guests ? "field-error" : ""}
+                    >
+                      {Array.from({ length: maxGuests }, (_, i) => (
+                        <option key={i + 1} value={i + 1}>{i + 1}{i === maxGuests - 1 ? "+" : ""} Guest{i > 0 ? "s" : ""}</option>
+                      ))}
+                    </Select>
+                    {errors.guests && <span className="form-error">{errors.guests.message}</span>}
+                  </label>
+                </div>
+
+                <div className="occasion-field">
+                  <span>Occasion (Optional)</span>
+                  <div className="occasion-row">
+                    {occasions.map((item) => (
+                      <button
+                        className={occasion === item ? "active" : ""}
+                        key={item}
+                        onClick={() => setOccasion(item)}
+                        type="button"
+                      >
+                        {item}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <label className={`form-field full-width ${errors.requests ? "has-error" : ""}`}>
+                  <span>Special Requests</span>
+                  <Textarea
+                    {...register("requests")}
+                    rows={3}
+                    placeholder="Dietary requirements, seating preferences, celebrations..."
+                    aria-invalid={!!errors.requests}
+                    className={errors.requests ? "field-error" : ""}
+                  />
+                  {errors.requests && <span className="form-error">{errors.requests.message}</span>}
+                </label>
+
+                {RECAPTCHA_SITE_KEY && (
+                  <div style={{ margin: "20px 0" }}>
+                    <RecaptchaWidget
+                      ref={recaptchaRef}
+                      siteKey={RECAPTCHA_SITE_KEY}
+                    />
+                  </div>
+                )}
+
+                <Button
+                  className="submit-btn"
+                  type="submit"
+                  disabled={createReservation.isPending || (!!selectedDate && dayStatus === "closed") || Object.keys(errors).length > 0}
+                >
+                  {createReservation.isPending ? "Submitting..." : "Confirm Reservation"}
+                </Button>
+
+                <p className="info-strip" style={{ marginTop: "16px" }}>
+                  📞 Or call us: <strong>{config?.phoneOne || restaurant.phoneOne}</strong> · <strong>{config?.phoneTwo || restaurant.phoneTwo}</strong>
+                </p>
+              </form>
+            </Card>
+          </div>
+
+          <div ref={hoursCardRef} style={{ opacity: 0 }}>
+            <Card className="hours-card" style={{ position: "sticky", top: "calc(var(--nav-height) + 24px)" }}>
+              <div style={{ marginBottom: "24px" }}>
+                <div style={{
+                  width: "40px", height: "3px",
+                  background: "linear-gradient(90deg, var(--primary), transparent)",
+                  marginBottom: "12px", borderRadius: "2px",
+                }} />
+                <h2 style={{ margin: 0, fontSize: "22px" }}>Opening Hours</h2>
+              </div>
+
+              <ul>
+                {DAYS.map((day) => {
+                  const dayHours = config?.hours[day];
+                  const closed = dayHours?.closed;
+                  return (
+                    <li key={day} style={closed ? { opacity: 0.4 } : {}}>
+                      <span>{day}</span>
+                      <strong>{closed ? "Closed" : `${dayHours?.open?.slice(0, 5) || "11:00"} – ${dayHours?.close?.slice(0, 5) || "23:00"}`}</strong>
+                    </li>
+                  );
+                })}
+              </ul>
+
+              <div style={{
+                height: "1px",
+                background: "var(--card-border)",
+                margin: "20px 0",
+              }} />
+
+              <p style={{ fontSize: "13px", lineHeight: 1.65, marginBottom: "20px" }}>
+                We recommend reservations for weekends and cultural event nights to guarantee your preferred table.
+              </p>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {[
+                  { label: "📞 Call", value: config?.phoneOne || restaurant.phoneOne, href: `tel:${config?.phoneOne || restaurant.phoneOne}` },
+                  { label: "📞 Call", value: config?.phoneTwo || restaurant.phoneTwo, href: `tel:${config?.phoneTwo || restaurant.phoneTwo}` },
+                ].map(({ label, value, href }) => (
+                  <a key={href} href={href} style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    padding: "10px 14px",
+                    border: "1px solid var(--card-border)",
+                    borderRadius: "var(--radius-card)",
+                    color: "var(--primary)",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    transition: "background 200ms ease",
+                  }}>
+                    <span style={{ color: "var(--muted)", fontSize: "12px" }}>{label}</span>
+                    {value}
+                  </a>
+                ))}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
