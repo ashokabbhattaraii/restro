@@ -4,6 +4,17 @@ export type DayHours = {
   closed: boolean;
 };
 
+export type GlimpseImage = {
+  src: string;
+  label: string;
+};
+
+export type GlimpseInside = {
+  title: string;
+  subtitle: string;
+  images: GlimpseImage[];
+};
+
 export type RestaurantConfig = {
   acceptingReservations: boolean;
   maxGuests: number;
@@ -21,7 +32,16 @@ export type RestaurantConfig = {
   eventTypes: string[];
   menuCategories: string[];
   galleryCategories: string[];
+  glimpseInside: GlimpseInside;
 };
+
+const DEFAULT_GLIMPSE_IMAGES = [
+  { src: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1400&q=90", label: "Dining Area" },
+  { src: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=1400&q=90", label: "Food" },
+  { src: "https://images.unsplash.com/photo-1575444758702-4a6b9222336e?auto=format&fit=crop&w=1400&q=90", label: "Bar" },
+  { src: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&w=1400&q=90", label: "Interior" },
+  { src: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&w=1400&q=85", label: "Events" },
+];
 
 export const DEFAULT_CONFIG: RestaurantConfig = {
   acceptingReservations: true,
@@ -48,4 +68,9 @@ export const DEFAULT_CONFIG: RestaurantConfig = {
   eventTypes: ["Live Music", "Happy Hour", "Festival", "Special", "Cultural", "Dinner"],
   menuCategories: ["All", "Nepali", "Indian", "Chinese", "Japanese", "BBQ & Grill", "Drinks & Bar", "Desserts"],
   galleryCategories: ["All", "Food", "Dining Area", "Bar", "Events", "Exterior"],
+  glimpseInside: {
+    title: "A Glimpse Inside",
+    subtitle: "From mountain-inspired interiors to gold-lit plates — a visual taste of the experience.",
+    images: DEFAULT_GLIMPSE_IMAGES,
+  },
 };

@@ -7,26 +7,19 @@ import { initGSAP } from "@/lib/gsap";
 import FoodImage from "@/components/shared/FoodImage";
 import SectionHeader from "@/components/shared/SectionHeader";
 import Button from "@/components/ui/Button";
-import { events, images, menuItems } from "@/lib/constants";
-
-
-const previewImages = [
-  { src: images.dining, label: "Dining Area" },
-  { src: menuItems[1].image, label: "Food" },
-  { src: images.bar, label: "Bar" },
-  { src: images.table, label: "Interior" },
-  { src: events[0].image, label: "Events" },
-];
+import { useConfig } from "@/hooks/useConfig";
 
 export default function GalleryPreviewSection() {
   initGSAP();
+  const { config } = useConfig();
+  const { glimpseInside } = config;
+  const previewImages = glimpseInside.images;
   const headerRef = useRef<HTMLDivElement>(null);
   const mosaicRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      /* ── Header ── */
       gsap.fromTo(
         headerRef.current,
         { opacity: 0, y: 32 },
@@ -36,7 +29,6 @@ export default function GalleryPreviewSection() {
         }
       );
 
-      /* ── Mosaic tiles: stagger with rotation ── */
       const mosaic = mosaicRef.current;
       if (!mosaic) return;
       const tiles = mosaic.querySelectorAll<HTMLElement>(".mosaic-tile");
@@ -59,7 +51,6 @@ export default function GalleryPreviewSection() {
         },
       });
 
-      /* ── CTA ── */
       gsap.fromTo(
         ctaRef.current,
         { opacity: 0, y: 24 },
@@ -69,7 +60,6 @@ export default function GalleryPreviewSection() {
         }
       );
 
-      /* ── Hover parallax on each tile ── */
       tiles.forEach((tile) => {
         const img = tile.querySelector("img");
         if (!img) return;
@@ -88,15 +78,15 @@ export default function GalleryPreviewSection() {
     });
 
     return () => ctx.revert();
-  }, []);
+  }, [previewImages]);
 
   return (
     <section className="section">
       <div className="container">
         <div ref={headerRef} style={{ opacity: 0 }}>
           <SectionHeader
-            title="A Glimpse Inside"
-            text="From mountain-inspired interiors to gold-lit plates — a visual taste of the experience."
+            title={glimpseInside.title}
+            text={glimpseInside.subtitle}
           />
         </div>
 
@@ -105,7 +95,7 @@ export default function GalleryPreviewSection() {
             <a
               className={`mosaic-tile tile-${index + 1}`}
               href="/gallery"
-              key={src}
+              key={`${src}-${index}`}
               aria-label={`View ${label} gallery`}
             >
               <FoodImage src={src} alt={`Restaurant ${label} gallery preview`} />

@@ -159,23 +159,22 @@ export default function AdminEvents() {
   }, [updateEvent]);
 
   return (
-    <div className="admin-page-content">
-      <div className="admin-panel">
+    <><div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Events</h2>
           <div className="admin-panel-header-actions">
             <span className="admin-panel-badge">{events.length} events</span>
             {activeCount > 0 && (
-              <span className="admin-panel-badge" style={{ background: "#059669", color: "#fff" }}>
+              <span className="admin-panel-badge admin-panel-badge--active">
                 {activeCount} active
               </span>
             )}
             {inactiveCount > 0 && (
-              <span className="admin-panel-badge" style={{ background: "#e74c3c", color: "#fff" }}>
+              <span className="admin-panel-badge admin-panel-badge--inactive">
                 {inactiveCount} inactive
               </span>
             )}
-            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => openModal(null, "add")}>
+            <button type="button" className="admin-btn-primary" onClick={() => openModal(null, "add")}>
               <Plus size={13} /> Add Event
             </button>
           </div>
@@ -435,6 +434,6 @@ export default function AdminEvents() {
           </div>
         )}
       </AdminModal>
-    </div>
+    </>
   );
 }

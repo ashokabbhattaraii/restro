@@ -79,18 +79,18 @@ export default function DataTable<T extends { _id?: string; id?: string }>({
               {hasActions && (
                 <td className="table-actions">
                   {onView && (
-                    <button type="button" className="admin-btn-sm" onClick={() => onView(row)} aria-label="View">
-                      <Eye size={13} /> View
+                    <button type="button" className="admin-btn-icon" onClick={() => onView(row)} aria-label="View details">
+                      <Eye size={14} />
                     </button>
                   )}
                   {onEdit && (
-                    <button type="button" className="admin-btn-sm" onClick={() => onEdit(row)} aria-label="Edit">
-                      <Pencil size={13} /> Edit
+                    <button type="button" className="admin-btn-icon" onClick={() => onEdit(row)} aria-label="Edit">
+                      <Pencil size={14} />
                     </button>
                   )}
                   {onDelete && (
-                    <button type="button" className="admin-btn-sm admin-btn-sm--danger" onClick={() => onDelete(row)} aria-label="Delete">
-                      <Trash2 size={13} /> Delete
+                    <button type="button" className="admin-btn-icon admin-btn-icon--danger" onClick={() => onDelete(row)} aria-label="Delete">
+                      <Trash2 size={14} />
                     </button>
                   )}
                 </td>

@@ -6,6 +6,17 @@ export interface IDayHours {
   closed: boolean
 }
 
+export interface IGlimpseImage {
+  src: string
+  label: string
+}
+
+export interface IGlimpseInside {
+  title: string
+  subtitle: string
+  images: IGlimpseImage[]
+}
+
 export interface IConfig extends Document {
   acceptingReservations: boolean
   maxGuests: number
@@ -23,6 +34,7 @@ export interface IConfig extends Document {
   eventTypes: string[]
   menuCategories: string[]
   galleryCategories: string[]
+  glimpseInside: IGlimpseInside
 }
 
 const DayHoursSchema = new Schema<IDayHours>(
@@ -30,6 +42,20 @@ const DayHoursSchema = new Schema<IDayHours>(
     open: { type: String, default: '11:00' },
     close: { type: String, default: '23:00' },
     closed: { type: Boolean, default: false },
+  },
+  { _id: false }
+)
+
+const GlimpseImageSchema = new Schema<IGlimpseImage>(
+  { src: { type: String, required: true }, label: { type: String, required: true } },
+  { _id: false }
+)
+
+const GlimpseInsideSchema = new Schema<IGlimpseInside>(
+  {
+    title: { type: String, default: 'A Glimpse Inside' },
+    subtitle: { type: String, default: '' },
+    images: { type: [GlimpseImageSchema], default: [] },
   },
   { _id: false }
 )
@@ -52,6 +78,7 @@ const ConfigSchema = new Schema<IConfig>(
     eventTypes: { type: [String], default: [] },
     menuCategories: { type: [String], default: [] },
     galleryCategories: { type: [String], default: [] },
+    glimpseInside: { type: GlimpseInsideSchema, default: () => ({ title: 'A Glimpse Inside', subtitle: '', images: [] }) },
   },
   { timestamps: true }
 )

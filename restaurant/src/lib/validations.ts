@@ -30,14 +30,16 @@ export const reservationSchema = z.object({
 
 export const messageSchema = z.object({
   name: z.string().trim().min(2).max(120),
-  phone: z.string().trim().max(32).optional(),
+  phone: z.string().trim().max(32).optional().or(z.literal("")),
   email: z.string().trim().email().optional().or(z.literal("")),
   subject: z.string().trim().min(2).max(120),
   message: z.string().trim().min(5).max(2000),
   contactType: z.enum(["feedback", "enquiry", "other"]),
   rating: z.number().int().min(1).max(5).optional(),
-  recaptchaToken: z.string().trim().min(1, "reCAPTCHA verification is required"),
-});
+}).refine(
+  (data) => data.contactType !== "feedback" || data.rating !== undefined,
+  { message: "Rating is required for feedback", path: ["rating"] }
+);
 
 export const menuItemSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(120, "Name is too long"),

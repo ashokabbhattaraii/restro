@@ -11,7 +11,7 @@ interface ImageUploaderProps {
   folder?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001';
 
 export default function ImageUploader({ value, onChange, folder = "restaurant" }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);

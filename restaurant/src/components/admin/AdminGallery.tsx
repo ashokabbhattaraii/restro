@@ -263,8 +263,7 @@ export default function AdminGallery() {
   };
 
   return (
-    <div className="admin-page-content">
-      <div className="admin-panel">
+    <><div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Gallery</h2>
           <div className="admin-panel-header-actions">
@@ -272,7 +271,7 @@ export default function AdminGallery() {
             <button type="button" className="admin-btn-sm" onClick={() => setCatMode(true)}>
               <Settings2 size={13} /> Categories
             </button>
-            <button type="button" className="admin-btn-primary" style={{ fontSize: 12, padding: "5px 12px" }} onClick={() => setAddMode(true)}>
+            <button type="button" className="admin-btn-primary" onClick={() => setAddMode(true)}>
               <Plus size={13} /> Add Image
             </button>
           </div>
@@ -375,6 +374,6 @@ export default function AdminGallery() {
           onClose={() => setCatMode(false)}
         />
       </AdminModal>
-    </div>
+    </>
   );
 }

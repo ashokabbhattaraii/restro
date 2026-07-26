@@ -10,27 +10,13 @@ import {
   Mail,
   Star,
   CheckCheck,
-  X,
   Trash2,
   Loader2,
   MessageCircle,
   ShieldCheck,
   ShieldX,
-  Reply,
-  Check,
   Clock,
-  Filter,
-  ChevronDown,
-  Copy,
-  Eye,
-  Edit,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  MailOpen,
-  Shield,
   AlertCircle,
-  MoreVertical,
   ArrowUpRight,
 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
@@ -62,7 +48,7 @@ const VERIFIED_OPTIONS = [
 ] as const;
 
 type ActiveTab = "feedback" | "other";
-type ModalMode = "view" | "reply" | "delete" | "verify" | "unverify" | null;
+type ModalMode = "view" | "delete" | "verify" | "unverify" | null;
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString(undefined, {
@@ -91,7 +77,6 @@ export default function AdminMessages() {
   const [selectedRow, setSelectedRow] = useState<Message | null>(null);
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [activeTab, setActiveTab] = useState<ActiveTab>("feedback");
-  const [replyText, setReplyText] = useState("");
   const [isVerifyPending, setIsVerifyPending] = useState(false);
 
   const { data: messages = [], isLoading } = useAdminMessages({
@@ -142,8 +127,6 @@ export default function AdminMessages() {
     [filtered, currentPage, rowsPerPage]
   );
 
-  // Unfiltered list, used ONLY for the tab badges and the global unread count so
-  // those numbers stay stable regardless of which tab is currently open.
   const { data: allMessages = [] } = useAdminMessages({});
   const feedbackTotal = allMessages.filter((m) => m.contactType === "feedback").length;
   const otherTotal = allMessages.filter((m) => m.contactType !== "feedback").length;
@@ -155,14 +138,12 @@ export default function AdminMessages() {
   const openModal = useCallback((row: Message | null, mode: ModalMode) => {
     setSelectedRow(row);
     setModalMode(mode);
-    if (mode === "reply") setReplyText("");
     if (mode === "verify" || mode === "unverify") setIsVerifyPending(false);
   }, []);
 
   const closeModal = useCallback(() => {
     setSelectedRow(null);
     setModalMode(null);
-    setReplyText("");
     setIsVerifyPending(false);
   }, []);
 
@@ -184,26 +165,6 @@ export default function AdminMessages() {
     }
   }, [updateMessage, closeModal]);
 
-  const handleReply = useCallback(async () => {
-    if (!selectedRow || !replyText.trim()) {
-      toast.error("Please enter a reply message");
-      return;
-    }
-    try {
-      await updateMessage.mutateAsync({
-        id: selectedRow._id || selectedRow.id!,
-        replied: true,
-        read: true,
-        reply: replyText.trim(),
-        replyAt: new Date().toISOString(),
-      });
-      toast.success("Reply sent and marked as replied");
-      closeModal();
-    } catch {
-      toast.error("Failed to send reply");
-    }
-  }, [selectedRow, replyText, updateMessage, closeModal]);
-
   const handleDelete = useCallback(async () => {
     if (!selectedRow) return;
     try {
@@ -223,202 +184,183 @@ export default function AdminMessages() {
 
   if (isLoading) {
     return (
-      <div className="admin-page-content">
-        <div className="admin-panel" style={{ textAlign: "center", padding: 48 }}>
-          <Loader2 size={24} className="animate-spin" style={{ color: "var(--a-gold)" }} />
-        </div>
+      <div className="admin-empty-state">
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--a-gold)" }} />
       </div>
     );
   }
 
-  const activeTabCounts = activeTab === "feedback"
-    ? { total: feedbackTotal, verified: verifiedCount, unverified: unverifiedCount }
-    : { total: otherTotal, verified: 0, unverified: 0 };
-
   return (
-    <div className="admin-page-content">
-      <div className="admin-panel">
-        <div className="admin-panel-header">
-          <h2>
-            <MessageCircle size={17} style={{ marginRight: 8, color: "var(--a-gold)" }} />
-            Messages
-          </h2>
-          <div className="admin-panel-header-actions">
-            {unreadCount > 0 && (
-              <span className="admin-panel-badge" style={{ background: "#e74c3c", color: "#fff" }}>
-                <AlertCircle size={11} style={{ marginRight: 4 }} /> {unreadCount} unread
-              </span>
-            )}
-          </div>
+    <div className="admin-panel">
+      <div className="admin-panel-header">
+        <h2>
+          <MessageCircle size={17} style={{ marginRight: 8, color: "var(--a-gold)" }} />
+          Messages
+        </h2>
+        <div className="admin-panel-header-actions">
+          {unreadCount > 0 && (
+            <span className="admin-panel-badge" style={{ background: "#e74c3c", color: "#fff" }}>
+              <AlertCircle size={11} style={{ marginRight: 4 }} /> {unreadCount} unread
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="admin-tabs" role="tablist" style={{ marginBottom: 16 }}>
+        <button
+          role="tab"
+          aria-selected={activeTab === "feedback"}
+          className={`admin-tab ${activeTab === "feedback" ? "admin-tab--active" : ""}`}
+          onClick={() => { setActiveTab("feedback"); setVerifiedFilter("all"); setCurrentPage(1); }}
+        >
+          <Star size={14} /> Feedback <span className="admin-tab-count">{feedbackTotal}</span>
+        </button>
+        <button
+          role="tab"
+          aria-selected={activeTab === "other"}
+          className={`admin-tab ${activeTab === "other" ? "admin-tab--active" : ""}`}
+          onClick={() => { setActiveTab("other"); setCurrentPage(1); }}
+        >
+          <Mail size={14} /> Other <span className="admin-tab-count">{otherTotal}</span>
+        </button>
+      </div>
+
+      <div className="admin-filters">
+        <div className="admin-search-wrap">
+          <Search size={15} className="admin-search-icon" />
+          <input
+            className="admin-input admin-search-input"
+            type="text"
+            placeholder="Search name, subject, message, email…"
+            defaultValue={search}
+            onChange={(e) => debouncedSearch(e.target.value)}
+          />
         </div>
 
-        <div className="admin-tabs" role="tablist" style={{ marginBottom: 16 }}>
-          <button
-            role="tab"
-            aria-selected={activeTab === "feedback"}
-            className={`admin-tab ${activeTab === "feedback" ? "admin-tab--active" : ""}`}
-            onClick={() => { setActiveTab("feedback"); setVerifiedFilter("all"); setCurrentPage(1); }}
-          >
-            <Star size={14} /> Feedback <span className="admin-tab-count">{feedbackTotal}</span>
-          </button>
-          <button
-            role="tab"
-            aria-selected={activeTab === "other"}
-            className={`admin-tab ${activeTab === "other" ? "admin-tab--active" : ""}`}
-            onClick={() => { setActiveTab("other"); setCurrentPage(1); }}
-          >
-            <Mail size={14} /> Other <span className="admin-tab-count">{otherTotal}</span>
-          </button>
-        </div>
+        <select
+          className="admin-input admin-select"
+          value={readFilter}
+          onChange={(e) => { setReadFilter(e.target.value as typeof readFilter); setCurrentPage(1); }}
+        >
+          {READ_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
 
-        <div className="admin-filters">
-          <div className="admin-search-wrap">
-            <Search size={15} className="admin-search-icon" />
-            <input
-              className="admin-input admin-search-input"
-              type="text"
-              placeholder="Search name, subject, message, email…"
-              defaultValue={search}
-              onChange={(e) => debouncedSearch(e.target.value)}
-            />
-          </div>
-
+        {activeTab === "feedback" && (
           <select
             className="admin-input admin-select"
-            value={readFilter}
-            onChange={(e) => { setReadFilter(e.target.value as typeof readFilter); setCurrentPage(1); }}
+            value={verifiedFilter}
+            onChange={(e) => { setVerifiedFilter(e.target.value as typeof verifiedFilter); setCurrentPage(1); }}
           >
-            {READ_OPTIONS.map(({ value, label }) => (
+            {VERIFIED_OPTIONS.map(({ value, label }) => (
               <option key={value} value={value}>{label}</option>
             ))}
           </select>
+        )}
+      </div>
 
-          {activeTab === "feedback" && (
-            <select
-              className="admin-input admin-select"
-              value={verifiedFilter}
-              onChange={(e) => { setVerifiedFilter(e.target.value as typeof verifiedFilter); setCurrentPage(1); }}
-            >
-              {VERIFIED_OPTIONS.map(({ value, label }) => (
-                <option key={value} value={value}>{label}</option>
-              ))}
-            </select>
-          )}
-        </div>
-
-        <DataTable<Message>
-          columns={[
-            {
-              key: "subject",
-              label: "Subject",
-              render: (_value, row) => (
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ 
-                    fontWeight: row.read ? 500 : 700, 
-                    color: "var(--a-text)", 
-                    whiteSpace: "nowrap", 
-                    overflow: "hidden", 
-                    textOverflow: "ellipsis" 
-                  }}>
-                    {row.subject}
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--a-text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {row.name} &middot; {row.email}
-                  </div>
+      <DataTable<Message>
+        columns={[
+          {
+            key: "subject",
+            label: "Subject",
+            render: (_value, row) => (
+              <div style={{ minWidth: 0 }}>
+                <div style={{ 
+                  fontWeight: row.read ? 500 : 700, 
+                  color: "var(--a-text)", 
+                  whiteSpace: "nowrap", 
+                  overflow: "hidden", 
+                  textOverflow: "ellipsis" 
+                }}>
+                  {row.subject}
                 </div>
-              ),
-            },
-            {
-              key: "contactType",
-              label: "Type",
-              render: (value) => (
-                <span className={`admin-badge ${CONTACT_TYPE_CLASSES[value as Message["contactType"]] || "badge-other"}`}>
-                  {CONTACT_TYPE_LABELS[value as Message["contactType"]] || value}
-                </span>
-              ),
-            },
-            {
-              key: "verified",
-              label: activeTab === "feedback" ? "Verified" : "—",
-              render: (value, row) =>
-                activeTab === "feedback" ? (
-                  <span className={`admin-badge ${value ? "badge-success" : "badge-warning"}`}>
-                    {value ? (
-                      <>
-                        <ShieldCheck size={11} style={{ marginRight: 4 }} /> Verified
-                      </>
-                    ) : (
-                      <>
-                        <ShieldX size={11} style={{ marginRight: 4 }} /> Unverified
-                      </>
-                    )}
-                  </span>
-                ) : (
-                  <span style={{ color: "var(--a-text-3)" }}>—</span>
-                ),
-            },
-            {
-              key: "read",
-              label: "Status",
-              render: (value) => (
-                <span className={`admin-badge ${value ? "badge-success" : "badge-danger"}`}>
+                <div style={{ fontSize: 12, color: "var(--a-text-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                  {row.name} &middot; {row.email}
+                </div>
+              </div>
+            ),
+          },
+          {
+            key: "contactType",
+            label: "Type",
+            render: (value) => (
+              <span className={`admin-badge ${CONTACT_TYPE_CLASSES[value as Message["contactType"]] || "badge-other"}`}>
+                {CONTACT_TYPE_LABELS[value as Message["contactType"]] || value}
+              </span>
+            ),
+          },
+          {
+            key: "verified",
+            label: activeTab === "feedback" ? "Verified" : "—",
+            render: (value, row) =>
+              activeTab === "feedback" ? (
+                <span className={`admin-badge ${value ? "badge-success" : "badge-warning"}`}>
                   {value ? (
-                    <>
-                      <CheckCheck size={11} style={{ marginRight: 4 }} /> Read
-                    </>
+                    <><ShieldCheck size={11} style={{ marginRight: 4 }} /> Verified</>
                   ) : (
-                    <>
-                      <Mail size={11} style={{ marginRight: 4 }} /> Unread
-                    </>
+                    <><ShieldX size={11} style={{ marginRight: 4 }} /> Unverified</>
                   )}
                 </span>
+              ) : (
+                <span style={{ color: "var(--a-text-3)" }}>—</span>
               ),
-            },
-            {
-              key: "createdAt",
-              label: "Received",
-              render: (value) => (
-                <span style={{ 
-                  display: "inline-flex", 
-                  alignItems: "center", 
-                  gap: 4, 
-                  color: "var(--a-text-3)", 
-                  fontSize: 12, 
-                  whiteSpace: "nowrap" 
-                }}>
-                  <Clock size={12} /> {formatDateShort(String(value))}
-                </span>
-              ),
-            },
-          ]}
-          data={paginatedRows}
-          onView={(row) => openModal(row, "view")}
-          onEdit={activeTab === "other" ? (row) => openModal(row, "reply") : undefined}
-          onDelete={(row) => openModal(row, "delete")}
-        />
+          },
+          {
+            key: "read",
+            label: "Status",
+            render: (value) => (
+              <span className={`admin-badge ${value ? "badge-success" : "badge-danger"}`}>
+                {value ? (
+                  <><CheckCheck size={11} style={{ marginRight: 4 }} /> Read</>
+                ) : (
+                  <><Mail size={11} style={{ marginRight: 4 }} /> Unread</>
+                )}
+              </span>
+            ),
+          },
+          {
+            key: "createdAt",
+            label: "Received",
+            render: (value) => (
+              <span style={{ 
+                display: "inline-flex", 
+                alignItems: "center", 
+                gap: 4, 
+                color: "var(--a-text-3)", 
+                fontSize: 12, 
+                whiteSpace: "nowrap" 
+              }}>
+                <Clock size={12} /> {formatDateShort(String(value))}
+              </span>
+            ),
+          },
+        ]}
+        data={paginatedRows}
+        onView={(row) => openModal(row, "view")}
+        onDelete={(row) => openModal(row, "delete")}
+      />
 
-        <AdminPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          rowsPerPage={rowsPerPage}
-          totalRows={filtered.length}
-          onPageChange={setCurrentPage}
-          onRowsPerPageChange={(rows) => { setRowsPerPage(rows); setCurrentPage(1); }}
-        />
-      </div>
+      <AdminPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        rowsPerPage={rowsPerPage}
+        totalRows={filtered.length}
+        onPageChange={setCurrentPage}
+        onRowsPerPageChange={(rows) => { setRowsPerPage(rows); setCurrentPage(1); }}
+      />
 
       <AdminModal open={modalMode === "view" && !!selectedRow} onClose={closeModal} title="Message Details" size="lg">
         {selectedRow && (
           <div className="admin-detail-grid">
-            <div className="admin-detail-item admin-detail-item--full" style={{ display: "flex", alignItems: "flex-start", gap: 16 }}>
-              <div style={{ flexShrink: 0 }}>
-                <span className={`admin-badge ${CONTACT_TYPE_CLASSES[selectedRow.contactType] || "badge-other"}`}>
-                  {CONTACT_TYPE_LABELS[selectedRow.contactType]}
-                </span>
-              </div>
+            <div className="admin-detail-header-row">
+              <span className={`admin-badge ${CONTACT_TYPE_CLASSES[selectedRow.contactType] || "badge-other"}`}>
+                {CONTACT_TYPE_LABELS[selectedRow.contactType]}
+              </span>
               <div>
-                <p style={{ fontSize: 18, fontWeight: 700, margin: "0 0 4px" }}>{selectedRow.subject}</p>
-                <p style={{ margin: 0, color: "var(--a-text-3)" }}>{selectedRow.name} &middot; {selectedRow.email}</p>
+                <p className="admin-detail-subject">{selectedRow.subject}</p>
+                <p className="admin-detail-sender">{selectedRow.name} &middot; {selectedRow.email}</p>
               </div>
             </div>
 
@@ -432,13 +374,9 @@ export default function AdminMessages() {
               <p>
                 <span className={`admin-badge ${selectedRow.read ? "badge-success" : "badge-danger"}`}>
                   {selectedRow.read ? (
-                    <>
-                      <CheckCheck size={11} style={{ marginRight: 4 }} /> Read
-                    </>
+                    <><CheckCheck size={11} style={{ marginRight: 4 }} /> Read</>
                   ) : (
-                    <>
-                      <Mail size={11} style={{ marginRight: 4 }} /> Unread
-                    </>
+                    <><Mail size={11} style={{ marginRight: 4 }} /> Unread</>
                   )}
                 </span>
               </p>
@@ -450,13 +388,9 @@ export default function AdminMessages() {
                 <p>
                   <span className={`admin-badge ${selectedRow.verified ? "badge-success" : "badge-warning"}`}>
                     {selectedRow.verified ? (
-                      <>
-                        <ShieldCheck size={11} style={{ marginRight: 4 }} /> Verified
-                      </>
+                      <><ShieldCheck size={11} style={{ marginRight: 4 }} /> Verified</>
                     ) : (
-                      <>
-                        <ShieldX size={11} style={{ marginRight: 4 }} /> Unverified
-                      </>
+                      <><ShieldX size={11} style={{ marginRight: 4 }} /> Unverified</>
                     )}
                   </span>
                 </p>
@@ -476,23 +410,19 @@ export default function AdminMessages() {
 
             <div className="admin-detail-item admin-detail-item--full">
               <label>Message</label>
-              <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7 }}>{selectedRow.message}</p>
+              <p className="admin-detail-message">{selectedRow.message}</p>
             </div>
 
             <div className="admin-detail-item admin-detail-item--full">
               <label>Received</label>
-              <p style={{ color: "var(--a-text-3)" }}>{formatDate(selectedRow.createdAt)}</p>
+              <p className="admin-detail-meta">{formatDate(selectedRow.createdAt)}</p>
             </div>
 
             {selectedRow.replied && selectedRow.reply && (
-              <div className="admin-detail-item admin-detail-item--full" style={{ borderTop: "1px solid var(--a-border)", paddingTop: 16, marginTop: 16 }}>
+              <div className="admin-detail-item admin-detail-item--full admin-detail-reply">
                 <label>Admin Reply</label>
-                <p style={{ whiteSpace: "pre-wrap", lineHeight: 1.7, background: "var(--a-surface-2)", padding: 12, borderRadius: 8, border: "1px solid var(--a-border)" }}>
-                  {selectedRow.reply}
-                </p>
-                <p style={{ fontSize: 12, color: "var(--a-text-3)", marginTop: 8 }}>
-                  Replied at: {selectedRow.replyAt ? formatDate(selectedRow.replyAt) : "—"}
-                </p>
+                <p className="admin-detail-reply-text">{selectedRow.reply}</p>
+                <p className="admin-detail-meta">Replied at: {selectedRow.replyAt ? formatDate(selectedRow.replyAt) : "—"}</p>
               </div>
             )}
 
@@ -504,7 +434,7 @@ export default function AdminMessages() {
                   onClick={() => updateMessage.mutateAsync({ id: selectedRow._id || selectedRow.id!, read: true }).then(() => closeModal())}
                   disabled={updateMessage.isPending}
                 >
-                  <CheckCheck size={13} style={{ marginRight: 4 }} /> Mark as Read
+                  <CheckCheck size={13} /> Mark Read
                 </button>
               )}
 
@@ -515,7 +445,7 @@ export default function AdminMessages() {
                   onClick={() => openModal(selectedRow, "verify")}
                   disabled={updateMessage.isPending}
                 >
-                  <ShieldCheck size={13} style={{ marginRight: 4 }} /> Verify Review
+                  <ShieldCheck size={13} /> Verify
                 </button>
               )}
 
@@ -526,24 +456,13 @@ export default function AdminMessages() {
                   onClick={() => openModal(selectedRow, "unverify")}
                   disabled={updateMessage.isPending}
                 >
-                  <ShieldX size={13} style={{ marginRight: 4 }} /> Unverify
+                  <ShieldX size={13} /> Unverify
                 </button>
               )}
 
-              {activeTab === "other" && !selectedRow.replied && (
-                <button
-                  type="button"
-                  className="admin-btn-primary"
-                  onClick={() => openModal(selectedRow, "reply")}
-                  disabled={updateMessage.isPending}
-                >
-                  <Reply size={13} style={{ marginRight: 4 }} /> Reply
-                </button>
-              )}
-
-              {activeTab === "other" && selectedRow.replied && (
-                <button type="button" className="admin-btn-sm" onClick={() => openMailto(selectedRow)}>
-                  <ArrowUpRight size={13} style={{ marginRight: 4 }} /> Open in Mail
+              {activeTab === "other" && selectedRow.email && (
+                <button type="button" className="admin-btn-primary" onClick={() => openMailto(selectedRow)}>
+                  <ArrowUpRight size={13} /> Reply in Mail
                 </button>
               )}
 
@@ -555,47 +474,12 @@ export default function AdminMessages() {
                 onClick={() => setModalMode("delete")}
                 disabled={isPending}
               >
-                <Trash2 size={12} style={{ marginRight: 4 }} /> Delete
+                <Trash2 size={13} /> Delete
               </button>
             </div>
           </div>
         )}
       </AdminModal>
-
-      {modalMode === "reply" && selectedRow && (
-        <AdminModal open={true} onClose={closeModal} title={`Reply to ${selectedRow.name}`} size="md">
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ background: "var(--a-surface-2)", padding: 12, borderRadius: 8, border: "1px solid var(--a-border)" }}>
-              <p style={{ margin: "0 0 8px", fontSize: 13, color: "var(--a-text-3)" }}>Original message:</p>
-              <p style={{ margin: 0, whiteSpace: "pre-wrap", fontSize: 14 }}>{selectedRow.message}</p>
-            </div>
-            <label style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={{ fontWeight: 600 }}>Your reply</span>
-              <textarea
-                className="admin-input admin-textarea"
-                rows={6}
-                placeholder="Type your reply here…"
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-              />
-            </label>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-              <button type="button" className="admin-btn-sm" onClick={closeModal} disabled={updateMessage.isPending}>Cancel</button>
-              <button type="button" className="admin-btn-primary" onClick={handleReply} disabled={updateMessage.isPending || !replyText.trim()}>
-                {updateMessage.isPending ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin" style={{ marginRight: 4 }} /> Sending…
-                  </>
-                ) : (
-                  <>
-                    <Reply size={13} style={{ marginRight: 4 }} /> Send Reply
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </AdminModal>
-      )}
 
       {modalMode === "verify" && selectedRow && (
         <AdminModal open={true} onClose={closeModal} title="Verify Feedback" size="sm">

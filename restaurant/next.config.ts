@@ -22,7 +22,7 @@ const nextConfig: NextConfig = {
       "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://www.google.com https://www.gstatic.com",
       "font-src 'self' https://www.gstatic.com",
       "frame-src https://www.google.com https://www.recaptcha.net",
-      "connect-src 'self' http://localhost:5000",
+      "connect-src 'self' http://localhost:6001",
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",

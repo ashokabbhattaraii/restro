@@ -23,7 +23,7 @@ import uploadRoutes from './routes/upload.routes'
 import configRoutes from './routes/config.routes'
 
 const app = express()
-const PORT = process.env.PORT || 5000
+const PORT = process.env.PORT || 6001
 
 app.use(helmet())
 app.use(cors({

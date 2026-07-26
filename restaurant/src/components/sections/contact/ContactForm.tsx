@@ -30,8 +30,12 @@ export default function ContactForm() {
   const form = useForm<ContactData>({
     resolver: zodResolver(messageSchema),
     defaultValues: {
+      name: "",
+      phone: "",
+      email: "",
       contactType: "enquiry",
       subject: "",
+      message: "",
       rating: undefined,
     },
   });
@@ -62,7 +66,15 @@ export default function ContactForm() {
         ? "Thank you for your review! Your feedback has been recorded."
         : "Message sent successfully! Our team will reach out through your email as soon as possible.";
       toast.success(message);
-      form.reset({ contactType: "enquiry", subject: "", rating: undefined });
+      form.reset({
+        name: "",
+        phone: "",
+        email: "",
+        contactType: "enquiry",
+        subject: "",
+        message: "",
+        rating: undefined,
+      });
       recaptchaRef.current?.reset();
       setRecaptchaToken(null);
       clearDraft();
@@ -177,9 +189,6 @@ export default function ContactForm() {
               siteKey={RECAPTCHA_SITE_KEY}
               onChange={setRecaptchaToken}
             />
-            {form.formState.errors.recaptchaToken && (
-              <span className="form-error">{form.formState.errors.recaptchaToken.message}</span>
-            )}
           </div>
         )}
 

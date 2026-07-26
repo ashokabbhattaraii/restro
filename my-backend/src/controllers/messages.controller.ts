@@ -6,6 +6,8 @@ import { AuthRequest } from '../middleware/auth'
 import { z } from 'zod'
 import { logger } from '../lib/logger'
 import { verifyRecaptchaToken } from '../lib/recaptcha'
+import { sendMail, isMailConfigured } from '../lib/mail'
+import { adminNotificationTemplate, autoReplyTemplate } from '../utils/mailTemplates'
 import { asyncHandler } from '../utils/asyncHandler'
 import { parsePaginationParams, paginate, parseBooleanParam } from '../utils/pagination'
 import { success, created, validationError, notFound, serverError, badRequest, unauthorized } from '../utils/response'
@@ -89,6 +91,42 @@ export const createMessage = asyncHandler(async (req: Request, res: Response) =>
   if (!recaptchaValid) { badRequest(res, 'reCAPTCHA verification failed. Please try again.'); return }
 
   const msg = await Message.create(messageData)
+
+  const shouldSendEmail = messageData.contactType && messageData.contactType !== 'feedback'
+
+  if (shouldSendEmail) {
+    const mailData = {
+      name: messageData.name,
+      email: messageData.email,
+      phone: messageData.phone,
+      subject: messageData.subject,
+      message: messageData.message,
+      contactType: messageData.contactType || 'other',
+    }
+
+    const adminContactEmail = process.env.ADMIN_CONTACT_EMAIL
+
+    if (adminContactEmail) {
+      logger.info('Sending admin notification', { to: adminContactEmail, contactType: mailData.contactType })
+      sendMail({
+        to: adminContactEmail,
+        subject: `[${mailData.contactType.toUpperCase()}] ${mailData.subject} — ${mailData.name}`,
+        html: adminNotificationTemplate(mailData),
+        replyTo: mailData.email || mailData.phone,
+      })
+    } else {
+      logger.warn('ADMIN_CONTACT_EMAIL not set — admin notification skipped')
+    }
+
+    if (mailData.email) {
+      sendMail({
+        to: mailData.email,
+        subject: 'We received your message — Nepali Restaurant & Bar',
+        html: autoReplyTemplate(mailData),
+      })
+    }
+  }
+
   created(res, msg)
 })
 

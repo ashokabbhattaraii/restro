@@ -105,17 +105,14 @@ export default function AdminAuditLog() {
 
   if (isLoading) {
     return (
-      <div className="admin-page-content">
-        <div className="admin-panel" style={{ textAlign: "center", padding: 48 }}>
-          <Loader2 size={24} className="animate-spin" style={{ color: "var(--primary)" }} />
-        </div>
+      <div className="admin-panel" style={{ textAlign: "center", padding: 48 }}>
+        <Loader2 size={24} className="animate-spin" style={{ color: "var(--primary)" }} />
       </div>
     );
   }
 
   return (
-    <div className="admin-page-content">
-      <div className="admin-panel">
+    <><div className="admin-panel">
         <div className="admin-panel-header">
           <h2>Audit Log</h2>
           <div className="admin-panel-header-actions">
@@ -225,7 +222,7 @@ export default function AdminAuditLog() {
       <AdminModal open={modalOpen && !!selectedEntry} onClose={closeModal} title="Audit Entry Details" size="lg">
         {selectedEntry && <AuditDetailContent entry={selectedEntry} onCopy={copyToClipboard} />}
       </AdminModal>
-    </div>
+    </>
   );
 }
 

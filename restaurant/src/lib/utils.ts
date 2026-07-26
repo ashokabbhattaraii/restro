@@ -43,7 +43,7 @@ export function toBase64(value: string) {
   return window.btoa(value);
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6001'
 
 export const fetcher = async <T>(url: string): Promise<T> => {
   const response = await fetch(`${API_BASE}${url}`, {
